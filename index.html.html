@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>靜力學第六章｜結構分析輔助教學網頁版</title>
+  <style>
+    :root{
+      --bg:#f4f6f8; --card:#fff; --ink:#1f2937; --muted:#6b7280; --line:#d1d5db;
+      --brand:#1d4ed8; --brand2:#0f766e; --danger:#dc2626; --blue:#2563eb; --gray:#6b7280;
+      --soft:#eef2ff; --ok:#16a34a; --warn:#d97706;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,"Segoe UI","Noto Sans TC",Arial,sans-serif;background:var(--bg);color:var(--ink)}
+    header{padding:18px 24px;background:linear-gradient(120deg,#0f172a,#1d4ed8);color:#fff}
+    header h1{margin:0;font-size:24px;letter-spacing:.03em}
+    header p{margin:6px 0 0;color:#dbeafe;font-size:14px}
+    .wrap{max-width:1480px;margin:0 auto;padding:16px}
+    .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+    button{border:0;border-radius:10px;padding:9px 13px;background:var(--brand);color:#fff;font-weight:700;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.12)}
+    button.secondary{background:var(--brand2)}
+    button.light{background:#fff;color:var(--ink);border:1px solid var(--line);box-shadow:none}
+    button.warn{background:var(--warn)}
+    button:hover{filter:brightness(.95)}
+    .grid{display:grid;grid-template-columns:430px 1fr;gap:14px}
+    .panel{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 4px 14px rgba(15,23,42,.05);overflow:hidden}
+    .panel h2{margin:0;padding:12px 14px;border-bottom:1px solid var(--line);font-size:17px;background:#f9fafb}
+    .panel-body{padding:12px}
+    .tabs{display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding:10px;background:#f9fafb}
+    .tab-btn{background:#fff;color:var(--ink);border:1px solid var(--line);box-shadow:none;padding:8px 10px;border-radius:999px;font-size:13px}
+    .tab-btn.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+    .tab{display:none}.tab.active{display:block}
+    label{display:block;font-weight:700;font-size:13px;margin:10px 0 5px}
+    textarea,input,select{width:100%;border:1px solid var(--line);border-radius:10px;padding:9px;font-family:"Consolas","Noto Sans TC",monospace;font-size:13px;background:#fff;color:var(--ink)}
+    textarea{min-height:90px;resize:vertical}
+    .hint{font-size:12px;color:var(--muted);margin:4px 0 8px;line-height:1.5}
+    .small-row{display:grid;grid-template-columns:1fr 120px;gap:8px;align-items:end}
+    canvas{width:100%;height:480px;background:#fff;border:1px solid var(--line);border-radius:12px;display:block}
+    .results{display:grid;grid-template-columns:1fr 1.2fr;gap:10px;margin-top:10px}
+    table{border-collapse:collapse;width:100%;font-size:13px;background:#fff;border-radius:10px;overflow:hidden}
+    th,td{border:1px solid var(--line);padding:7px;text-align:center}
+    th{background:#f3f4f6}
+    .stateT{color:var(--danger);font-weight:700}.stateC{color:var(--blue);font-weight:700}.stateZ{color:var(--gray);font-weight:700}
+    pre{white-space:pre-wrap;line-height:1.55;background:#0b1020;color:#e5e7eb;border-radius:12px;padding:12px;max-height:430px;overflow:auto;font-size:13px}
+    .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+    .badge{display:inline-block;border-radius:999px;padding:3px 8px;font-size:12px;background:var(--soft);color:var(--brand);font-weight:700;margin-left:4px}
+    .legend{display:flex;gap:12px;flex-wrap:wrap;font-size:13px;margin:8px 0;color:var(--muted)}
+    .sw{display:inline-block;width:22px;height:4px;border-radius:10px;vertical-align:middle;margin-right:5px}.red{background:red}.blue{background:blue}.gray{background:gray}.green{background:green}
+    .notice{padding:10px;border-radius:10px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;font-size:13px;line-height:1.6}
+    footer{padding:14px;text-align:center;color:var(--muted);font-size:12px}
+    @media(max-width:1050px){.grid{grid-template-columns:1fr}.results{grid-template-columns:1fr}.two,.three{grid-template-columns:1fr}canvas{height:420px}}
+  </style>
+</head>
+<body>
+<header>
+  <h1>靜力學第六章｜結構分析輔助教學網頁版</h1>
+  <p>支援：6.1 簡單桁架、6.2 接點法、6.3 零力構件、6.4 截面法、6.5 空間桁架、6.6 構架與機具輔助</p>
+</header>
+
+<div class="wrap">
+  <div class="toolbar">
+    <button onclick="loadExample2D()">載入平面桁架範例</button>
+    <button onclick="analyze2D()">節點法分析</button>
+    <button onclick="analyzeSection()" class="secondary">截面法分析</button>
+    <button onclick="drawJointDiagram()" class="warn">繪製接點受力圖</button>
+    <button onclick="clear2D()" class="light">清空平面資料</button>
+  </div>
+
+  <div class="grid">
+    <section class="panel">
+      <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('input2d',this)">平面桁架輸入</button>
+        <button class="tab-btn" onclick="showTab('sectionTab',this)">截面法 / 接點圖</button>
+        <button class="tab-btn" onclick="showTab('space3d',this)">6.5 空間桁架</button>
+        <button class="tab-btn" onclick="showTab('frameMachine',this)">6.6 構架與機具</button>
+        <button class="tab-btn" onclick="showTab('chapter6',this)">第六章說明</button>
+      </div>
+
+      <div class="panel-body">
+        <div id="input2d" class="tab active">
+          <label>節點座標 node,x,y</label>
+          <textarea id="nodes2d"></textarea>
+          <div class="hint">例如：A,0,0。座標單位可視為 m。</div>
+
+          <label>桿件 member,node_i,node_j</label>
+          <textarea id="members2d"></textarea>
+
+          <label>支承 node,pin / roller_y / roller_x</label>
+          <textarea id="supports2d"></textarea>
+          <div class="hint">pin 有 x、y 兩個反力；roller_y 只有垂直反力；roller_x 只有水平反力。</div>
+
+          <label>外力 node,Fx,Fy</label>
+          <textarea id="loads2d"></textarea>
+          <div class="hint">向右為 +Fx，向上為 +Fy，向下力請輸入負值。</div>
+        </div>
+
+        <div id="sectionTab" class="tab">
+          <label>截面法切割桿件</label>
+          <input id="cutMembers" value="AB,BC,EC" />
+          <div class="hint">一次建議切 1～3 根桿件，且移除後要能把桁架分成兩個自由體。</div>
+
+          <label>接點受力圖：選擇節點</label>
+          <div class="small-row">
+            <select id="jointSelect"></select>
+            <button onclick="drawJointDiagram()">繪製</button>
+          </div>
+          <div class="notice" style="margin-top:12px">
+            接點受力圖是用來對照 6.2 接點法：每個節點列 ΣFx=0、ΣFy=0。桿件力正值預設沿桿件向外拉。
+          </div>
+        </div>
+
+        <div id="space3d" class="tab">
+          <div class="toolbar">
+            <button onclick="loadExample3D()">載入 3D 範例</button>
+            <button onclick="analyze3D()">求解空間桁架</button>
+          </div>
+          <label>3D 節點 node,x,y,z</label>
+          <textarea id="nodes3d"></textarea>
+          <label>3D 桿件 member,node_i,node_j</label>
+          <textarea id="members3d"></textarea>
+          <label>3D 支承 node,xyz / xz / z</label>
+          <textarea id="supports3d"></textarea>
+          <label>3D 外力 node,Fx,Fy,Fz</label>
+          <textarea id="loads3d"></textarea>
+          <div class="hint">空間桁架每個節點建立三條方程式：ΣFx=0、ΣFy=0、ΣFz=0。</div>
+        </div>
+
+        <div id="frameMachine" class="tab">
+          <button onclick="generateFrameNotes()">產生構架與機具解題提醒</button>
+          <label>題目整理區</label>
+          <textarea id="frameInput" style="min-height:260px"></textarea>
+          <div class="hint">此頁是 6.6 的 FBD 輔助整理。構架與機具常需要拆成多個剛體分別列 ΣFx、ΣFy、ΣM。</div>
+        </div>
+
+        <div id="chapter6" class="tab">
+          <pre id="chapter6Text"></pre>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>圖形顯示 <span class="badge">紅=受拉</span><span class="badge">藍=受壓</span><span class="badge">灰=零力/未求解</span></h2>
+      <div class="panel-body">
+        <div class="legend">
+          <span><i class="sw red"></i>受拉 Tension</span>
+          <span><i class="sw blue"></i>受壓 Compression</span>
+          <span><i class="sw gray"></i>零力桿 / 未求解</span>
+          <span><i class="sw green"></i>外力</span>
+        </div>
+        <canvas id="canvas" width="980" height="520"></canvas>
+        <div class="results">
+          <div>
+            <h3>支承反力</h3>
+            <div id="reactionTable"></div>
+          </div>
+          <div>
+            <h3>桿件內力</h3>
+            <div id="forceTable"></div>
+          </div>
+        </div>
+        <h3>計算過程 / 教學說明</h3>
+        <pre id="log"></pre>
+      </div>
+    </section>
+  </div>
+</div>
+<footer>Static web app｜可直接部署到 GitHub Pages / Netlify / Vercel</footer>
+
+<script>
+const EPS = 1e-9;
+let state2D = {data:null, result:null, cut:null};
+let state3D = {data:null, result:null};
+
+function $(id){ return document.getElementById(id); }
+function fmt(v){ if(!isFinite(v)) return String(v); return (Math.abs(v)<1e-8?0:v).toFixed(3); }
+function cleanLine(s){ return s.trim().replaceAll('，', ',').split('#')[0].trim(); }
+function forceState(v){ if(Math.abs(v)<1e-6) return '零力桿'; return v>0?'受拉 Tension':'受壓 Compression'; }
+function stateClass(v){ if(Math.abs(v)<1e-6) return 'stateZ'; return v>0?'stateT':'stateC'; }
+function signed(v){ return v>=0?`+ ${fmt(v)}`:`- ${fmt(Math.abs(v))}`; }
+function term(c,name){ if(Math.abs(c)<1e-10) return ''; return `${c>=0?'+':'-'} ${fmt(Math.abs(c))}${name}`; }
+function showTab(id, btn){ document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); $(id).classList.add('active'); document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); if(id==='chapter6') updateChapter6Text(); }
+
+function combinations(arr, k){
+  const res=[];
+  function back(start, cur){
+    if(cur.length===k){ res.push(cur.slice()); return; }
+    for(let i=start;i<arr.length;i++){ cur.push(arr[i]); back(i+1,cur); cur.pop(); }
+  }
+  back(0,[]); return res;
+}
+
+function rankOf(M){
+  const A = M.map(r=>r.slice());
+  const rows=A.length, cols=A[0]?.length||0;
+  let r=0;
+  for(let c=0;c<cols && r<rows;c++){
+    let piv=r;
+    for(let i=r+1;i<rows;i++) if(Math.abs(A[i][c])>Math.abs(A[piv][c])) piv=i;
+    if(Math.abs(A[piv][c])<1e-10) continue;
+    [A[r],A[piv]]=[A[piv],A[r]];
+    const div=A[r][c];
+    for(let j=c;j<cols;j++) A[r][j]/=div;
+    for(let i=0;i<rows;i++) if(i!==r){
+      const f=A[i][c];
+      if(Math.abs(f)>1e-12) for(let j=c;j<cols;j++) A[i][j]-=f*A[r][j];
+    }
+    r++;
+  }
+  return r;
+}
+
+function solveSquare(A,b){
+  const n=A.length;
+  const M=A.map((r,i)=>r.slice().concat([b[i]]));
+  for(let c=0;c<n;c++){
+    let piv=c;
+    for(let i=c+1;i<n;i++) if(Math.abs(M[i][c])>Math.abs(M[piv][c])) piv=i;
+    if(Math.abs(M[piv][c])<1e-10) throw new Error('矩陣奇異，無法唯一求解');
+    [M[c],M[piv]]=[M[piv],M[c]];
+    const div=M[c][c];
+    for(let j=c;j<=n;j++) M[c][j]/=div;
+    for(let i=0;i<n;i++) if(i!==c){
+      const f=M[i][c];
+      for(let j=c;j<=n;j++) M[i][j]-=f*M[c][j];
+    }
+  }
+  return M.map(r=>r[n]);
+}
+
+function transpose(A){ return A[0].map((_,c)=>A.map(r=>r[c])); }
+function matMul(A,B){ return A.map(r=>B[0].map((_,c)=>r.reduce((s,v,k)=>s+v*B[k][c],0))); }
+function matVec(A,x){ return A.map(r=>r.reduce((s,v,k)=>s+v*x[k],0)); }
+function leastSquares(A,b){
+  const At=transpose(A);
+  const AtA=matMul(At,A);
+  const Atb=At.map(r=>r.reduce((s,v,k)=>s+v*b[k],0));
+  return solveSquare(AtA,Atb);
+}
+function norm(v){ return Math.sqrt(v.reduce((s,x)=>s+x*x,0)); }
+
+function parse2D(){
+  const nodes={};
+  $('nodes2d').value.split('\n').forEach(raw=>{
+    const line=cleanLine(raw); if(!line) return;
+    const p=line.split(',').map(x=>x.trim());
+    if(p.length!==3) throw new Error(`節點格式錯誤：${raw}`);
+    nodes[p[0]]={x:Number(p[1]),y:Number(p[2])};
+  });
+  const members={};
+  $('members2d').value.split('\n').forEach(raw=>{
+    const line=cleanLine(raw); if(!line) return;
+    const p=line.split(',').map(x=>x.trim());
+    if(p.length!==3) throw new Error(`桿件格式錯誤：${raw}`);
+    if(!nodes[p[1]]||!nodes[p[2]]) throw new Error(`桿件 ${p[0]} 的節點不存在`);
+    members[p[0]]={id:p[0],n1:p[1],n2:p[2]};
+  });
+  const supports={};
+  $('supports2d').value.split('\n').forEach(raw=>{
+    const line=cleanLine(raw); if(!line) return;
+    const p=line.split(',').map(x=>x.trim());
+    if(p.length!==2) throw new Error(`支承格式錯誤：${raw}`);
+    if(!nodes[p[0]]) throw new Error(`支承節點 ${p[0]} 不存在`);
+    supports[p[0]]=p[1].toLowerCase();
+  });
+  const loads={}; Object.keys(nodes).forEach(n=>loads[n]={fx:0,fy:0});
+  $('loads2d').value.split('\n').forEach(raw=>{
+    const line=cleanLine(raw); if(!line) return;
+    const p=line.split(',').map(x=>x.trim());
+    if(p.length!==3) throw new Error(`外力格式錯誤：${raw}`);
+    if(!nodes[p[0]]) throw new Error(`外力節點 ${p[0]} 不存在`);
+    loads[p[0]].fx += Number(p[1]); loads[p[0]].fy += Number(p[2]);
+  });
+  if(Object.keys(nodes).length===0 || Object.keys(members).length===0) throw new Error('請至少輸入節點與桿件');
+  return {nodes,members,supports,loads};
+}
+
+function buildReactions2D(data){
+  const out=[];
+  Object.entries(data.supports).forEach(([node,type])=>{
+    if(['pin','hinge','鉸','鉸支承'].includes(type)){
+      out.push({name:`R_${node}x`,node,ux:1,uy:0}); out.push({name:`R_${node}y`,node,ux:0,uy:1});
+    }else if(['roller_y','roller','y','vertical'].includes(type)){
+      out.push({name:`R_${node}y`,node,ux:0,uy:1});
+    }else if(['roller_x','x','horizontal'].includes(type)){
+      out.push({name:`R_${node}x`,node,ux:1,uy:0});
+    }else throw new Error(`支承型式 ${type} 無法辨識`);
+  });
+  return out;
+}
+function unit2D(data,a,b){
+  const p=data.nodes[a], q=data.nodes[b]; const dx=q.x-p.x, dy=q.y-p.y; const L=Math.hypot(dx,dy);
+  if(L<EPS) throw new Error(`節點 ${a} 與 ${b} 重合`);
+  return {ux:dx/L,uy:dy/L,L};
+}
+function unitAtJoint(data,m,j){
+  if(j===m.n1) return unit2D(data,m.n1,m.n2);
+  if(j===m.n2) return unit2D(data,m.n2,m.n1);
+  throw new Error(`${m.id} 不連接 ${j}`);
+}
+function incident(data,node){ return Object.keys(data.members).filter(mid=>data.members[mid].n1===node||data.members[mid].n2===node); }
+function collinear(data,m1,m2,node){ const a=unitAtJoint(data,m1,node), b=unitAtJoint(data,m2,node); return Math.abs(a.ux*b.uy-a.uy*b.ux)<1e-6; }
+
+function detectZero2D(data){
+  const zero=new Set(), info=[]; let changed=true;
+  while(changed){
+    changed=false;
+    for(const node of Object.keys(data.nodes)){
+      const L=data.loads[node]||{fx:0,fy:0};
+      if(Math.abs(L.fx)>EPS||Math.abs(L.fy)>EPS||data.supports[node]) continue;
+      const inc=incident(data,node).filter(mid=>!zero.has(mid));
+      if(inc.length===2){
+        const m1=data.members[inc[0]], m2=data.members[inc[1]];
+        if(!collinear(data,m1,m2,node)){
+          inc.forEach(mid=>{if(!zero.has(mid)){zero.add(mid);changed=true;}});
+          info.push(`節點 ${node} 只有兩根非共線桿件 ${inc[0]}, ${inc[1]}，且無外力與支承，因此兩者為零力桿。`);
+        }
+      }else if(inc.length===3){
+        for(const [a,b] of combinations(inc,2)){
+          if(collinear(data,data.members[a],data.members[b],node)){
+            const third=inc.find(x=>x!==a&&x!==b);
+            if(!zero.has(third)){ zero.add(third); changed=true; info.push(`節點 ${node} 的 ${a}, ${b} 共線，且無外力與支承，因此 ${third} 為零力桿。`); }
+            break;
+          }
+        }
+      }
+    }
+  }
+  if(info.length===0) info.push('未由基本規則直接辨識到零力桿。');
+  return {zero,info};
+}
+
+function solve2D(data){
+  const nodes=Object.keys(data.nodes), mids=Object.keys(data.members), reactions=buildReactions2D(data);
+  const unknowns=mids.concat(reactions.map(r=>r.name));
+  const rows=2*nodes.length, cols=unknowns.length;
+  const A=Array.from({length:rows},()=>Array(cols).fill(0)); const b=Array(rows).fill(0);
+  const rowFx=n=>2*nodes.indexOf(n), rowFy=n=>2*nodes.indexOf(n)+1;
+  nodes.forEach(n=>{ const L=data.loads[n]||{fx:0,fy:0}; b[rowFx(n)] = -L.fx; b[rowFy(n)] = -L.fy; });
+  mids.forEach((mid,c)=>{
+    const m=data.members[mid], u=unit2D(data,m.n1,m.n2);
+    A[rowFx(m.n1)][c]+=u.ux; A[rowFy(m.n1)][c]+=u.uy;
+    A[rowFx(m.n2)][c]-=u.ux; A[rowFy(m.n2)][c]-=u.uy;
+  });
+  reactions.forEach((r,k)=>{ const c=mids.length+k; A[rowFx(r.node)][c]+=r.ux; A[rowFy(r.node)][c]+=r.uy; });
+  const rank=rankOf(A);
+  const zr=detectZero2D(data);
+  const equations=[];
+  nodes.forEach(n=>{
+    [['ΣFx',rowFx(n)],['ΣFy',rowFy(n)]].forEach(([dir,row])=>{
+      let left=[]; unknowns.forEach((name,c)=>{ const t=term(A[row][c],name); if(t) left.push(t); });
+      const load = -b[row]; equations.push(`節點 ${n} ${dir}: ${left.join(' ')||'0'} ${signed(load)} = 0`);
+    });
+  });
+  if(rank<cols) return {success:false,message:`求解失敗：矩陣 rank=${rank}，未知數=${cols}。可能不穩定、支承不足或靜不定。`,equations,zeroInfo:zr.info};
+  let x;
+  if(rows===cols) x=solveSquare(A,b); else x=leastSquares(A,b);
+  const residual=norm(matVec(A,x).map((v,i)=>v-b[i]));
+  const values={}; unknowns.forEach((name,i)=>values[name]=x[i]);
+  const memberForces={}; mids.forEach(mid=>memberForces[mid]=values[mid]);
+  const reactionValues={}; reactions.forEach(r=>reactionValues[r.name]=values[r.name]);
+  const steps=makeJointSteps(data,memberForces,reactionValues,reactions,zr.zero);
+  return {success:true,rank,residual,unknowns,values,memberForces,reactions:reactionValues,reactionList:reactions,equations,zeroInfo:zr.info,zeroSet:zr.zero,steps};
+}
+
+function makeJointSteps(data,memberForces,reactions,reactionList,zeroSet){
+  const steps=[]; const solved=new Set([...zeroSet]);
+  if(zeroSet.size) steps.push(`先由零力桿規則得到：${[...zeroSet].join(', ')} = 0。`);
+  const nodes=Object.keys(data.nodes);
+  for(let pass=0; pass<Object.keys(data.members).length+5; pass++){
+    let progressed=false;
+    for(const node of nodes){
+      const inc=incident(data,node); const unknown=inc.filter(mid=>!solved.has(mid));
+      if(unknown.length===0 || unknown.length>2) continue;
+      let kfx=(data.loads[node]?.fx)||0, kfy=(data.loads[node]?.fy)||0;
+      reactionList.forEach(r=>{ if(r.node===node){ const rv=reactions[r.name]||0; kfx+=rv*r.ux; kfy+=rv*r.uy; }});
+      const knownLines=[];
+      inc.forEach(mid=>{ if(solved.has(mid)){ const u=unitAtJoint(data,data.members[mid],node); const f=memberForces[mid]; kfx+=f*u.ux; kfy+=f*u.uy; knownLines.push(`${mid}=${fmt(f)}`); }});
+      const coeffs=unknown.map(mid=>{ const u=unitAtJoint(data,data.members[mid],node); return {mid,ux:u.ux,uy:u.uy}; });
+      const fxTerms=coeffs.map(c=>Math.abs(c.ux)>1e-10?term(c.ux,c.mid):'').filter(Boolean).join(' ')||'0';
+      const fyTerms=coeffs.map(c=>Math.abs(c.uy)>1e-10?term(c.uy,c.mid):'').filter(Boolean).join(' ')||'0';
+      const lines=[`選節點 ${node}：此節點剩下未知桿件 ${unknown.join(', ')}，可用 ΣFx=0、ΣFy=0 解。`];
+      if(knownLines.length) lines.push(`已知桿件：${knownLines.join(', ')}`);
+      lines.push(`ΣFx: ${fxTerms} ${signed(kfx)} = 0`);
+      lines.push(`ΣFy: ${fyTerms} ${signed(kfy)} = 0`);
+      unknown.forEach(mid=>lines.push(`解得 ${mid} = ${fmt(memberForces[mid])}，${forceState(memberForces[mid])}。`));
+      steps.push(lines.join('\n')); unknown.forEach(mid=>solved.add(mid)); progressed=true;
+    }
+    if(!progressed) break;
+  }
+  const remain=Object.keys(data.members).filter(mid=>!solved.has(mid));
+  if(remain.length) steps.push(`下列桿件無法用「每次只剩 1～2 個未知數的節點」排序：${remain.join(', ')}。程式已用整體節點平衡矩陣求解。`);
+  return steps;
+}
+
+function analyze2D(){
+  try{
+    const data=parse2D(); state2D.data=data; updateJointSelect(data);
+    const result=solve2D(data); state2D.result=result; state2D.cut=null;
+    if(!result.success){ log(result.message+'\n\n【方程式】\n'+(result.equations||[]).join('\n')); draw2D(data,null,null); renderTables(null); return; }
+    const nodes=Object.keys(data.nodes), mids=Object.keys(data.members), rlist=buildReactions2D(data);
+    const staticMsg = (mids.length+rlist.length===2*nodes.length)?`符合平面靜定桁架常用檢查式 m+r=${mids.length}+${rlist.length}=${mids.length+rlist.length}=2j=${2*nodes.length}`:`提醒：m+r=${mids.length+rlist.length}，2j=${2*nodes.length}，可能不是簡單靜定桁架。`;
+    let out=`【6.1 簡單桁架檢查】\n${staticMsg}\n矩陣 rank=${result.rank}，殘差 norm=${result.residual.toExponential(3)}\n\n`;
+    out+=`【6.3 零力構件】\n${result.zeroInfo.join('\n')}\n\n`;
+    out+=`【6.2 接點法方程式】\n${result.equations.join('\n')}\n\n`;
+    out+=`【接點法逐步計算】\n${result.steps.map((s,i)=>`Step ${i+1}\n${s}`).join('\n\n')}`;
+    log(out); draw2D(data,result.memberForces,null); renderTables(result);
+  }catch(e){ alert(e.message); }
+}
+
+function analyzeSection(){
+  try{
+    const data=parse2D(); state2D.data=data; updateJointSelect(data);
+    let result=state2D.result;
+    if(!result||!result.success){ result=solve2D(data); state2D.result=result; }
+    if(!result.success) throw new Error('必須先能完成節點法/整體平衡，才能進行截面法。');
+    const cuts=$('cutMembers').value.replaceAll('，',',').split(',').map(s=>s.trim()).filter(Boolean);
+    const sec=solveSection2D(data,cuts,result);
+    state2D.cut=new Set(cuts);
+    log(sec.text); draw2D(data,result.memberForces,state2D.cut); renderTables(result);
+  }catch(e){ alert(e.message); }
+}
+
+function solveSection2D(data,cutMembers,baseResult){
+  if(cutMembers.length===0) throw new Error('請輸入切割桿件');
+  if(cutMembers.length>3) throw new Error('截面法一次建議切過不超過 3 根桿件');
+  cutMembers.forEach(mid=>{if(!data.members[mid]) throw new Error(`找不到桿件 ${mid}`);});
+  const graph={}; Object.keys(data.nodes).forEach(n=>graph[n]=new Set());
+  Object.entries(data.members).forEach(([mid,m])=>{ if(cutMembers.includes(mid)) return; graph[m.n1].add(m.n2); graph[m.n2].add(m.n1); });
+  const comps=[], unvisited=new Set(Object.keys(data.nodes));
+  while(unvisited.size){ const start=[...unvisited][0], stack=[start], comp=new Set([start]); unvisited.delete(start); while(stack.length){ const cur=stack.pop(); graph[cur].forEach(nb=>{ if(unvisited.has(nb)){unvisited.delete(nb); comp.add(nb); stack.push(nb);} }); } comps.push(comp); }
+  if(comps.length!==2) throw new Error('這組切割桿件移除後沒有把桁架分成剛好兩部分，請重新選擇。');
+  const side = comps[0].size<=comps[1].size?comps[0]:comps[1]; const other = side===comps[0]?comps[1]:comps[0];
+  cutMembers.forEach(mid=>{ const m=data.members[mid]; if(side.has(m.n1)===side.has(m.n2)) throw new Error(`桿件 ${mid} 沒有跨越截面兩側`); });
+  const rlist=buildReactions2D(data); const known=[];
+  side.forEach(node=>{ const p=data.nodes[node], L=data.loads[node]||{fx:0,fy:0}; if(Math.abs(L.fx)>EPS||Math.abs(L.fy)>EPS) known.push({label:`外力@${node}`,node,x:p.x,y:p.y,fx:L.fx,fy:L.fy}); rlist.forEach(r=>{if(r.node===node){ const val=baseResult.reactions[r.name]||0; if(Math.abs(val)>EPS) known.push({label:r.name,node,x:p.x,y:p.y,fx:val*r.ux,fy:val*r.uy});}}); });
+  const unknowns=cutMembers.map(mid=>{ const m=data.members[mid]; let sideNode,outNode; if(side.has(m.n1)){sideNode=m.n1; outNode=m.n2;} else {sideNode=m.n2; outNode=m.n1;} const u=unit2D(data,sideNode,outNode), p=data.nodes[sideNode]; return {mid,sideNode,x:p.x,y:p.y,ux:u.ux,uy:u.uy}; });
+  const rows=[], rhs=[], eqs=[];
+  function addFx(){ const coeff=unknowns.map(u=>u.ux); const k=known.reduce((s,f)=>s+f.fx,0); rows.push(coeff); rhs.push(-k); eqs.push(makeSecEq('ΣFx',unknowns,coeff,k)); }
+  function addFy(){ const coeff=unknowns.map(u=>u.uy); const k=known.reduce((s,f)=>s+f.fy,0); rows.push(coeff); rhs.push(-k); eqs.push(makeSecEq('ΣFy',unknowns,coeff,k)); }
+  function addM(o){ const op=data.nodes[o]; const coeff=unknowns.map(u=>(u.x-op.x)*u.uy-(u.y-op.y)*u.ux); const k=known.reduce((s,f)=>s+(f.x-op.x)*f.fy-(f.y-op.y)*f.fx,0); rows.push(coeff); rhs.push(-k); eqs.push(makeSecEq(`ΣM_${o}`,unknowns,coeff,k)); }
+  addFx(); addFy(); [...side].sort().forEach(addM);
+  const n=cutMembers.length; let chosen=null, sol=null;
+  for(const comb of combinations(rows.map((_,i)=>i),n)){ const sub=comb.map(i=>rows[i]); if(rankOf(sub)===n){ chosen=comb; sol=solveSquare(sub,comb.map(i=>rhs[i])); break; } }
+  if(!chosen) throw new Error('此截面方程式無法獨立求出所有切割桿件，請改選截面。');
+  const vals={}; cutMembers.forEach((mid,i)=>vals[mid]=sol[i]);
+  let text='【6.4 截面法 Method of Sections】\n';
+  text+=`切割桿件：${cutMembers.join(', ')}\nA側節點：${[...side].sort().join(', ')}\nB側節點：${[...other].sort().join(', ')}\n\n`;
+  text+='已知作用在選定自由體上的外力與反力：\n'; text+=known.length?known.map(f=>`  ${f.label}: Fx=${fmt(f.fx)}, Fy=${fmt(f.fy)}`).join('\n'):'  此側無外力與支承反力。';
+  text+='\n\n選用平衡式：\n'+chosen.map(i=>'  '+eqs[i]).join('\n')+'\n\n解得：\n';
+  text+=cutMembers.map(mid=>`  ${mid} = ${fmt(vals[mid])}，${forceState(vals[mid])}（節點法比對：${fmt(baseResult.memberForces[mid])}）`).join('\n');
+  return {values:vals,text};
+}
+function makeSecEq(title,unknowns,coeff,known){ const left=unknowns.map((u,i)=>Math.abs(coeff[i])>1e-10?term(coeff[i],u.mid):'').filter(Boolean).join(' ')||'0'; return `${title}: ${left} ${signed(known)} = 0`; }
+
+function renderTables(result){
+  if(!result){ $('reactionTable').innerHTML=''; $('forceTable').innerHTML=''; return; }
+  let rt='<table><tr><th>反力</th><th>數值</th></tr>'; Object.entries(result.reactions).forEach(([k,v])=>rt+=`<tr><td>${k}</td><td>${fmt(v)}</td></tr>`); rt+='</table>'; $('reactionTable').innerHTML=rt;
+  let ft='<table><tr><th>桿件</th><th>內力</th><th>狀態</th></tr>'; Object.entries(result.memberForces).forEach(([k,v])=>ft+=`<tr><td>${k}</td><td>${fmt(v)}</td><td class="${stateClass(v)}">${forceState(v)}</td></tr>`); ft+='</table>'; $('forceTable').innerHTML=ft;
+}
+function log(s){ $('log').textContent=s; }
+
+function updateJointSelect(data){ const sel=$('jointSelect'), old=sel.value; sel.innerHTML=''; Object.keys(data.nodes).forEach(n=>{ const o=document.createElement('option'); o.value=n; o.textContent=n; sel.appendChild(o); }); if(data.nodes[old]) sel.value=old; }
+
+function draw2D(data,forces,cutSet){
+  const cv=$('canvas'), ctx=cv.getContext('2d'); ctx.clearRect(0,0,cv.width,cv.height);
+  const nodes=Object.values(data.nodes), xs=nodes.map(p=>p.x), ys=nodes.map(p=>p.y); const minX=Math.min(...xs), maxX=Math.max(...xs), minY=Math.min(...ys), maxY=Math.max(...ys);
+  const pad=55, sx=(cv.width-2*pad)/Math.max(maxX-minX,1), sy=(cv.height-2*pad)/Math.max(maxY-minY,1), sc=Math.min(sx,sy);
+  function P(p){ return {x:pad+(p.x-minX)*sc, y:cv.height-pad-(p.y-minY)*sc}; }
+  const vals=forces?Object.values(forces).map(Math.abs):[1], maxF=Math.max(...vals,1);
+  ctx.font='14px Arial'; ctx.lineCap='round';
+  Object.entries(data.members).forEach(([mid,m])=>{
+    const a=P(data.nodes[m.n1]), b=P(data.nodes[m.n2]); const f=forces?forces[mid]:0;
+    ctx.strokeStyle=!forces?'gray':Math.abs(f)<1e-6?'gray':f>0?'red':'blue'; ctx.lineWidth=!forces?3:3+5*Math.abs(f)/maxF;
+    if(cutSet&&cutSet.has(mid)) ctx.setLineDash([10,7]); else ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke(); ctx.setLineDash([]);
+    const mx=(a.x+b.x)/2, my=(a.y+b.y)/2; ctx.fillStyle='rgba(255,255,255,.82)'; ctx.fillRect(mx-32,my-18,64,34); ctx.fillStyle='#111'; ctx.textAlign='center'; ctx.fillText(mid,mx,my-3); if(forces) ctx.fillText(fmt(f),mx,my+13);
+  });
+  // supports
+  Object.entries(data.supports).forEach(([n,type])=>{ const p=P(data.nodes[n]); ctx.strokeStyle='#111'; ctx.fillStyle='#111'; ctx.lineWidth=2; if(type.includes('pin')){ ctx.beginPath(); ctx.moveTo(p.x,p.y+8); ctx.lineTo(p.x-12,p.y+30); ctx.lineTo(p.x+12,p.y+30); ctx.closePath(); ctx.fill(); }else if(type.includes('roller_x')||type==='x'){ ctx.beginPath(); ctx.arc(p.x-18,p.y,8,0,Math.PI*2); ctx.stroke(); }else{ ctx.beginPath(); ctx.arc(p.x,p.y+22,8,0,Math.PI*2); ctx.stroke(); }});
+  // loads
+  const maxLoad=Math.max(...Object.values(data.loads).map(L=>Math.hypot(L.fx,L.fy)),1); const arrowScale=45/maxLoad;
+  Object.entries(data.loads).forEach(([n,L])=>{ if(Math.hypot(L.fx,L.fy)<EPS) return; const p=P(data.nodes[n]); drawArrow(ctx,p.x,p.y,p.x+L.fx*arrowScale,p.y-L.fy*arrowScale,'green',3); ctx.fillStyle='green'; ctx.fillText(`P(${fmt(L.fx)},${fmt(L.fy)})`,p.x+L.fx*arrowScale,p.y-L.fy*arrowScale-6); });
+  // nodes
+  Object.entries(data.nodes).forEach(([n,p0])=>{ const p=P(p0); ctx.fillStyle='#111'; ctx.beginPath(); ctx.arc(p.x,p.y,6,0,Math.PI*2); ctx.fill(); ctx.fillStyle='#111'; ctx.font='bold 16px Arial'; ctx.textAlign='center'; ctx.fillText(n,p.x,p.y-12); });
+}
+function drawArrow(ctx,x1,y1,x2,y2,color,lw){ ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=lw; ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke(); const ang=Math.atan2(y2-y1,x2-x1); const h=11; ctx.beginPath(); ctx.moveTo(x2,y2); ctx.lineTo(x2-h*Math.cos(ang-Math.PI/6),y2-h*Math.sin(ang-Math.PI/6)); ctx.lineTo(x2-h*Math.cos(ang+Math.PI/6),y2-h*Math.sin(ang+Math.PI/6)); ctx.closePath(); ctx.fill(); }
+
+function drawJointDiagram(){
+  try{
+    const data=parse2D(); updateJointSelect(data); let result=state2D.result; if(!result||!result.success) result=solve2D(data); const node=$('jointSelect').value||Object.keys(data.nodes)[0];
+    const cv=$('canvas'), ctx=cv.getContext('2d'); ctx.clearRect(0,0,cv.width,cv.height); const cx=cv.width/2, cy=cv.height/2, R=140;
+    ctx.fillStyle='#111'; ctx.beginPath(); ctx.arc(cx,cy,8,0,Math.PI*2); ctx.fill(); ctx.font='bold 22px Arial'; ctx.textAlign='center'; ctx.fillText(node,cx,cy-20);
+    let notes=`【6.2 接點法：節點 ${node} 受力圖】\n`;
+    Object.entries(data.members).forEach(([mid,m])=>{ if(m.n1!==node&&m.n2!==node) return; const u=unitAtJoint(data,m,node), f=result.success?result.memberForces[mid]:0; const color=Math.abs(f)<1e-6?'gray':f>0?'red':'blue'; drawArrow(ctx,cx,cy,cx+u.ux*R,cy-u.uy*R,color,4); ctx.fillStyle=color; ctx.font='15px Arial'; ctx.fillText(`${mid} ${fmt(f)}`,cx+u.ux*(R+35),cy-u.uy*(R+35)); notes+=`桿件 ${mid}: 內力=${fmt(f)}，${forceState(f)}\n`; });
+    const L=data.loads[node]||{fx:0,fy:0}; if(Math.hypot(L.fx,L.fy)>EPS){ const mag=Math.hypot(L.fx,L.fy), ux=L.fx/mag, uy=L.fy/mag; drawArrow(ctx,cx,cy,cx+ux*100,cy-uy*100,'green',4); notes+=`外力: Fx=${fmt(L.fx)}, Fy=${fmt(L.fy)}\n`; }
+    if(result.success){ buildReactions2D(data).forEach(r=>{ if(r.node===node){ const val=result.reactions[r.name]||0; if(Math.abs(val)>EPS){ drawArrow(ctx,cx,cy,cx+r.ux*90,cy-r.uy*90,'purple',4); } notes+=`支承反力 ${r.name}: ${fmt(val)}\n`; }}); }
+    log(notes);
+  }catch(e){ alert(e.message); }
+}
+
+function loadExample2D(){
+  $('nodes2d').value=`A,0,0\nB,2,0\nC,4,0\nE,2,2\nD,4,2`;
+  $('members2d').value=`AB,A,B\nBC,B,C\nAE,A,E\nBE,B,E\nEC,E,C\nED,E,D\nCD,C,D`;
+  $('supports2d').value=`A,roller_y\nD,pin`;
+  $('loads2d').value=`B,0,-400`;
+  $('cutMembers').value='AB,BC,EC';
+  const data=parse2D(); state2D={data,result:null,cut:null}; updateJointSelect(data); draw2D(data,null,null); renderTables(null); log('已載入平面桁架範例。按「節點法分析」開始計算。'); updateChapter6Text();
+}
+function clear2D(){ ['nodes2d','members2d','supports2d','loads2d','cutMembers'].forEach(id=>$(id).value=''); state2D={data:null,result:null,cut:null}; $('jointSelect').innerHTML=''; const cv=$('canvas'),ctx=cv.getContext('2d'); ctx.clearRect(0,0,cv.width,cv.height); renderTables(null); log(''); }
+
+// 3D
+function parse3D(){
+  const nodes={}; $('nodes3d').value.split('\n').forEach(raw=>{ const line=cleanLine(raw); if(!line)return; const p=line.split(',').map(x=>x.trim()); if(p.length!==4) throw new Error(`3D節點格式錯誤：${raw}`); nodes[p[0]]={x:+p[1],y:+p[2],z:+p[3]}; });
+  const members={}; $('members3d').value.split('\n').forEach(raw=>{ const line=cleanLine(raw); if(!line)return; const p=line.split(',').map(x=>x.trim()); if(p.length!==3) throw new Error(`3D桿件格式錯誤：${raw}`); members[p[0]]={id:p[0],n1:p[1],n2:p[2]}; });
+  const supports=[]; $('supports3d').value.split('\n').forEach(raw=>{ const line=cleanLine(raw).toLowerCase(); if(!line)return; const p=line.split(',').map(x=>x.trim()); if(p.length!==2) throw new Error(`3D支承格式錯誤：${raw}`); const node=p[0].toUpperCase(); for(const d of p[1]){ if(!'xyz'.includes(d)) throw new Error('支承方向只能為 x/y/z'); supports.push({name:`R_${node}${d}`,node,dir:d}); }});
+  const loads={}; Object.keys(nodes).forEach(n=>loads[n]={fx:0,fy:0,fz:0}); $('loads3d').value.split('\n').forEach(raw=>{ const line=cleanLine(raw); if(!line)return; const p=line.split(',').map(x=>x.trim()); if(p.length!==4) throw new Error(`3D外力格式錯誤：${raw}`); loads[p[0]].fx+=+p[1]; loads[p[0]].fy+=+p[2]; loads[p[0]].fz+=+p[3]; });
+  return {nodes,members,supports,loads};
+}
+function unit3D(data,a,b){ const p=data.nodes[a],q=data.nodes[b], dx=q.x-p.x,dy=q.y-p.y,dz=q.z-p.z,L=Math.hypot(dx,dy,dz); if(L<EPS) throw new Error('3D桿件長度為0'); return {ux:dx/L,uy:dy/L,uz:dz/L,L}; }
+function solve3D(data){
+  const nodes=Object.keys(data.nodes), mids=Object.keys(data.members), unknowns=mids.concat(data.supports.map(r=>r.name)); const A=Array.from({length:3*nodes.length},()=>Array(unknowns.length).fill(0)), b=Array(3*nodes.length).fill(0); const row=n=>3*nodes.indexOf(n);
+  nodes.forEach(n=>{ const L=data.loads[n]||{fx:0,fy:0,fz:0}; b[row(n)]=-L.fx; b[row(n)+1]=-L.fy; b[row(n)+2]=-L.fz; });
+  mids.forEach((mid,c)=>{ const m=data.members[mid], u=unit3D(data,m.n1,m.n2); A[row(m.n1)][c]+=u.ux; A[row(m.n1)+1][c]+=u.uy; A[row(m.n1)+2][c]+=u.uz; A[row(m.n2)][c]-=u.ux; A[row(m.n2)+1][c]-=u.uy; A[row(m.n2)+2][c]-=u.uz; });
+  data.supports.forEach((r,k)=>{ const c=mids.length+k, rr=row(r.node); if(r.dir==='x')A[rr][c]=1; if(r.dir==='y')A[rr+1][c]=1; if(r.dir==='z')A[rr+2][c]=1; });
+  const rank=rankOf(A); if(rank<unknowns.length) return {success:false,message:`求解失敗：rank=${rank}，未知數=${unknowns.length}。可能不穩定或靜不定。`};
+  const x=A.length===unknowns.length?solveSquare(A,b):leastSquares(A,b); const values={}; unknowns.forEach((u,i)=>values[u]=x[i]); const mf={}; mids.forEach(mid=>mf[mid]=values[mid]); const rv={}; data.supports.forEach(r=>rv[r.name]=values[r.name]); return {success:true,rank,residual:norm(matVec(A,x).map((v,i)=>v-b[i])),values,memberForces:mf,reactions:rv};
+}
+function analyze3D(){
+  try{ const data=parse3D(); const res=solve3D(data); state3D={data,result:res}; draw3D(data,res.success?res.memberForces:null); if(!res.success){ log('【6.5 空間桁架】\n'+res.message); return; } let out=`【6.5 空間桁架 Space Trusses】\n節點數 j=${Object.keys(data.nodes).length}，桿件數 m=${Object.keys(data.members).length}，支承反力數 r=${data.supports.length}\nm+r=${Object.keys(data.members).length+data.supports.length}，3j=${3*Object.keys(data.nodes).length}\nrank=${res.rank}，殘差 norm=${res.residual.toExponential(3)}\n\n桿件內力：\n`; Object.entries(res.memberForces).forEach(([k,v])=>out+=`  ${k} = ${fmt(v)}，${forceState(v)}\n`); out+='\n支承反力：\n'; Object.entries(res.reactions).forEach(([k,v])=>out+=`  ${k} = ${fmt(v)}\n`); log(out); renderTables({reactions:res.reactions,memberForces:res.memberForces}); }catch(e){alert(e.message);} }
+function draw3D(data,forces){
+  const cv=$('canvas'), ctx=cv.getContext('2d'); ctx.clearRect(0,0,cv.width,cv.height); const pts=Object.values(data.nodes); const coords=[]; function proj(p){ const X=(p.x-p.y)*0.75; const Y=(p.x+p.y)*0.38-p.z*0.9; return {X,Y}; } pts.forEach(p=>coords.push(proj(p))); const xs=coords.map(p=>p.X), ys=coords.map(p=>p.Y), minX=Math.min(...xs),maxX=Math.max(...xs),minY=Math.min(...ys),maxY=Math.max(...ys), pad=70, sc=Math.min((cv.width-2*pad)/Math.max(maxX-minX,1),(cv.height-2*pad)/Math.max(maxY-minY,1)); function P(p){ const q=proj(p); return {x:pad+(q.X-minX)*sc, y:pad+(q.Y-minY)*sc}; } const maxF=Math.max(...(forces?Object.values(forces).map(Math.abs):[1]),1); Object.entries(data.members).forEach(([mid,m])=>{ const a=P(data.nodes[m.n1]), b=P(data.nodes[m.n2]), f=forces?forces[mid]:0; ctx.strokeStyle=!forces?'gray':Math.abs(f)<1e-6?'gray':f>0?'red':'blue'; ctx.lineWidth=!forces?3:3+5*Math.abs(f)/maxF; ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke(); ctx.fillStyle='#111'; ctx.textAlign='center'; ctx.fillText(mid,(a.x+b.x)/2,(a.y+b.y)/2); }); Object.entries(data.nodes).forEach(([n,p])=>{ const q=P(p); ctx.fillStyle='#111'; ctx.beginPath(); ctx.arc(q.x,q.y,6,0,Math.PI*2); ctx.fill(); ctx.font='bold 15px Arial'; ctx.fillText(n,q.x,q.y-10); }); }
+function loadExample3D(){ $('nodes3d').value=`A,0,0,0\nB,2,0,0\nC,0,2,0\nD,0,0,2`; $('members3d').value=`AB,A,B\nAC,A,C\nAD,A,D\nBC,B,C\nBD,B,D\nCD,C,D`; $('supports3d').value=`A,xyz\nB,yz\nC,z`; $('loads3d').value=`D,0,0,-100`; const data=parse3D(); draw3D(data,null); log('已載入 3D 空間桁架範例。'); }
+
+function generateFrameNotes(){
+  const txt=`【6.6 構架與機具 Frames and Machines】\n\n構架與機具和桁架不同：\n1. 桁架桿件通常是二力構件，力沿桿件軸線。\n2. 構架與機具的構件可能是多力構件，必須把每個剛體拆開畫自由體圖。\n\n解題流程：\nStep 1：判斷外部支承反力。\nStep 2：找出內部鉸接，拆成 Bx、By 等未知力。\nStep 3：判斷二力構件：只受兩個力且無力矩，兩力必共線。\nStep 4：判斷三力構件：只受三個力且平衡，三力作用線必共點或互相平行。\nStep 5：對每個構件分別列 ΣFx=0、ΣFy=0、ΣM=0。\nStep 6：內部鉸接在相鄰構件上大小相等、方向相反。\n\n目前題目整理：\n${$('frameInput').value}`;
+  log(txt);
+}
+function loadFrameTemplate(){ $('frameInput').value=`[構件]\n桿件1：例如 AB\n桿件2：例如 BC\n\n[接點]\nA：支承\nB：內部鉸接\nC：外力作用點\n\n[外力]\nB：Fx=0, Fy=-400 N\n\n[判斷]\n1. 哪些是二力構件？\n2. 哪些是三力構件？\n3. 每個剛體各自畫 FBD。`; }
+
+function updateChapter6Text(){
+  let data=null,result=null; try{ data=parse2D(); result=state2D.result&&state2D.result.success?state2D.result:solve2D(data); }catch(e){}
+  let info='【第六章：結構分析功能整合】\n\n';
+  info+='6.1 簡單桁架：輸入節點、桿件、支承、外力，並繪製桁架幾何。\n';
+  if(data){ const j=Object.keys(data.nodes).length,m=Object.keys(data.members).length,r=buildReactions2D(data).length; info+=`目前 j=${j}, m=${m}, r=${r}, m+r=${m+r}, 2j=${2*j}\n`; }
+  info+='\n6.2 接點法：建立每個節點的 ΣFx=0、ΣFy=0，求所有桿件內力。\n';
+  info+='6.3 零力構件：自動套用兩根非共線、三根其中兩根共線的基本零力桿規則。\n';
+  info+='6.4 截面法：輸入 1～3 根切割桿件，自動選一側自由體列 ΣFx、ΣFy、ΣM。\n';
+  info+='6.5 空間桁架：輸入 3D 節點與 3D 支承，建立 ΣFx、ΣFy、ΣFz。\n';
+  info+='6.6 構架與機具：提供多剛體拆解、二力/三力構件與 FBD 流程提醒。\n';
+  $('chapter6Text').textContent=info;
+}
+
+loadFrameTemplate(); loadExample2D(); loadExample3D(); updateChapter6Text();
+</script>
+</body>
+</html>
