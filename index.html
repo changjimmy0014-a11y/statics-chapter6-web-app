@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>靜力學第十章｜慣性矩輔助教學網頁</title>
+<title>靜力學第十章｜截面慣性矩求解系統（精進版）</title>
 <style>
 :root{
   --bg:#f4f7fb;
@@ -234,7 +234,7 @@ canvas{
   margin:10px 0;
   line-height:1.65;
 }
-.kbd{
+details{border:1px solid var(--line);border-radius:12px;padding:10px;background:#f8fafc;margin-top:10px}summary{color:#1d4ed8}.mini-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}@media(max-width:900px){.mini-grid{grid-template-columns:repeat(2,1fr)}}.kbd{
   display:inline-block;
   background:#111827;
   color:white;
@@ -246,13 +246,18 @@ canvas{
 </head>
 <body>
 <header>
-  <h1>靜力學第十章｜慣性矩輔助教學網頁</h1>
-  <p>支援：10.1 面積慣性矩定義、10.2 平行軸定理、10.3 迴轉半徑、10.4 組合面積、10.5 面積慣性積、10.6 傾斜軸、10.7 莫耳圓、10.8 質量慣性矩</p>
+  <h1>靜力學第十章｜截面慣性矩求解系統（精進版）</h1>
+  <p>支援：工程截面快速建模（矩形、圓形、I 型鋼、T 型截面、中空截面）＋ 平行軸定理 ＋ 轉動半徑 ＋ 完整表格化步驟</p>
 </header>
 
 <div class="container">
   <div class="toolbar">
     <button onclick="loadExampleComposite()">載入組合面積範例</button>
+    <button class="green" onclick="openCurveSqrt()">載入曲線題 y = √x</button>
+    <button class="purple" onclick="openEngineeringPreset('ibeam')">載入 I 型鋼範例</button>
+    <button class="purple" onclick="openEngineeringPreset('tbeam')">載入 T 型截面範例</button>
+    <button class="orange" onclick="openSectorExample()">載入 10-9 扇形題</button>
+    <button class="green" onclick="loadExample1015()">載入 10-15/16 範例</button>
     <button class="green" onclick="solveActive()">計算目前頁面</button>
     <button class="purple" onclick="drawMohrFromComposite()">組合面積 → 莫耳圓</button>
     <button class="orange" onclick="clearAll()">清空資料</button>
@@ -263,10 +268,12 @@ canvas{
     <div class="card">
       <div class="tabs" id="tabs">
         <div class="tab active" data-panel="basic">10.1~10.3 基本慣性矩</div>
+        <div class="tab" data-panel="curve">曲線面積直接解題</div>
+        <div class="tab" data-panel="engineering">工程截面快速建模</div>
+        <div class="tab" data-panel="sector">10-9 扇形 / 極座標</div>
         <div class="tab" data-panel="composite">10.4 組合面積</div>
         <div class="tab" data-panel="product">10.5~10.7 慣性積 / 傾斜軸 / 莫耳圓</div>
         <div class="tab" data-panel="mass">10.8 質量慣性矩</div>
-        <div class="tab" data-panel="photo">拍照上傳解題</div>
       </div>
 
       <div class="pad">
@@ -303,32 +310,206 @@ canvas{
           <div class="small">dy 是形心到欲求 x 軸的垂直距離；dx 是形心到欲求 y 軸的水平距離。</div>
         </section>
 
+        <section id="curve" class="panel">
+          <h3>曲線面積直接解題</h3>
+          <div class="note">
+            這頁就是為了像 <b>y = √x、0 ≤ x ≤ 1</b> 這種題目做的。
+            不用再輸入 custom 面積，直接輸入曲線方程式與範圍即可。
+          </div>
+
+          <div class="formula">
+            A = ∫[y上 − y下] dx<br>
+            x̄ = (1/A) ∫x[y上 − y下] dx<br>
+            ȳ = (1/A) ∫1/2[y上² − y下²] dx<br>
+            Ix = ∫1/3[y上³ − y下³] dx，Iy = ∫x²[y上 − y下] dx
+          </div>
+
+          <label>上邊界 y上 = f(x)</label>
+          <input id="curveYTop" value="sqrt(x)" placeholder="例如 sqrt(x), x^0.5, x**0.5">
+
+          <label>下邊界 y下 = g(x)</label>
+          <input id="curveYBottom" value="0" placeholder="通常是 0">
+
+          <div class="row">
+            <div>
+              <label>x 起點 a</label>
+              <input id="curveA" type="number" value="0" step="any">
+            </div>
+            <div>
+              <label>x 終點 b</label>
+              <input id="curveB" type="number" value="1" step="any">
+            </div>
+          </div>
+
+          <div class="row">
+            <button onclick="loadCurveSqrtExample()">載入 y = √x 範例</button>
+            <button onclick="solveCurveArea()">直接計算曲線面積</button>
+          </div>
+
+          <label style="display:flex;align-items:center;gap:8px;margin-top:10px">
+            <input id="showCentroidLines" type="checkbox" style="width:auto" onchange="solveCurveArea()">
+            顯示形心輔助線與 G 點
+          </label>
+
+          <div class="small">
+            可用：sqrt(x)、sin(x)、cos(x)、tan(x)、exp(x)、log(x)、abs(x)、pi。x^0.5 也可以。<br>
+            預設使用「課本圖模式」：只畫陰影面積、座標軸、尺寸 1 m，不顯示形心線。
+          </div>
+        </section>
+
+        <!-- engineering section quick builder -->
+        <section id="engineering" class="panel">
+          <h3>工程截面快速建模</h3>
+          <label>題目文字 / 指令輸入（可選）</label>
+          <textarea id="engTextInput" placeholder="例：I型鋼 H=300 bf=150 tf=20 tw=10，或 T型 H=200 bf=120 tf=20 tw=12"></textarea>
+          <div class="row">
+            <button onclick="parseEngineeringText()">由文字填入尺寸</button>
+            <button class="secondary" onclick="document.getElementById('engTextInput').value=''">清空文字</button>
+          </div>
+          <div class="small">
+            可辨識關鍵字：I型鋼 / T型 / 中空矩形 / 矩形 / 圓形 / 圓管，以及 H、B、b、bf、tf、tw、D、d 等尺寸。
+          </div>
+
+          <label>截面類型</label>
+          <select id="engType" onchange="renderEngineeringInputs()">
+            <option value="rect">矩形 Rectangle</option>
+            <option value="circle">實心圓 Circle</option>
+            <option value="ibeam">I 型鋼 I-section</option>
+            <option value="tbeam">T 型截面 T-section</option>
+            <option value="hrect">中空矩形 Hollow rectangle</option>
+            <option value="tube">中空圓管 Circular tube</option>
+          </select>
+
+          <div id="engInputs"></div>
+
+          <div class="row">
+            <button onclick="buildEngineeringSection()">建立截面並計算</button>
+            <button class="secondary" onclick="sendEngineeringToComposite()">送到 10.4 組合面積頁</button>
+          </div>
+
+          <div class="formula">
+            系統內部計算邏輯：<br>
+            1. 將工程截面拆成矩形 / 圓形 / 孔洞等子面積。<br>
+            2. 對每個子面積求 A、x̄i、ȳi、IxGi、IyGi。<br>
+            3. 求整體形心：x̄ = Σ(Ai x̄i)/ΣAi，ȳ = Σ(Ai ȳi)/ΣAi。<br>
+            4. 平行軸定理：Ix = Σ(IxGi + Ai(ȳi−ȳ)²)，Iy = Σ(IyGi + Ai(x̄i−x̄)²。<br>
+            5. 轉動半徑：kx = √(Ix/A)，ky = √(Iy/A)。
+          </div>
+        </section>
+
         <!-- 10.4 -->
         <section id="composite" class="panel">
           <h3>10.4 組合面積的慣性矩</h3>
           <div class="note">
-            每一列代表一個子面積。x̄、ȳ 請輸入該子面積的「形心座標」。
-            如果是挖孔，類型選「扣除孔洞」即可。
+            直觀輸入版：先選「矩形 / 圓形 / 中空圓 / 直角三角形 / 自訂」，再填形心座標與尺寸，按「加入子面積」。
+            不用再自己記一整串逗號格式。
           </div>
 
-          <label>組合面積資料</label>
-          <textarea id="componentsText"># 格式：名稱,類型,形狀,xbar,ybar,b,h,d,D,A,IxG,IyG,IxyG
+          <h4>新增一個子面積</h4>
+          <div class="row3">
+            <div>
+              <label>名稱</label>
+              <input id="quickName" value="A1" placeholder="例如 R1、C1">
+            </div>
+            <div>
+              <label>面積類型</label>
+              <select id="quickKind">
+                <option value="add">加入面積</option>
+                <option value="hole">扣除孔洞</option>
+              </select>
+            </div>
+            <div>
+              <label>形狀</label>
+              <select id="quickShape" onchange="renderQuickComponentInputs()">
+                <option value="rect">矩形</option>
+                <option value="circle">實心圓</option>
+                <option value="tube">中空圓</option>
+                <option value="rtriBR">直角三角形（右側垂直邊）</option>
+                <option value="custom">自訂 A, IxG, IyG, IxyG</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row">
+            <div>
+              <label>形心 x̄i</label>
+              <input id="quickX" type="number" value="0" step="any">
+            </div>
+            <div>
+              <label>形心 ȳi</label>
+              <input id="quickY" type="number" value="0" step="any">
+            </div>
+          </div>
+
+          <div id="quickShapeInputs"></div>
+
+          <div class="row">
+            <button onclick="addQuickComponent()">加入子面積</button>
+            <button class="secondary" onclick="clearComponents()">清空子面積</button>
+          </div>
+
+          <label>目前子面積清單</label>
+          <div id="componentList" class="note">尚未加入子面積。</div>
+
+          <details>
+            <summary style="cursor:pointer;font-weight:800;margin-top:10px">進階：查看 / 手動修改資料列</summary>
+            <textarea id="componentsText"># 格式：名稱,類型,形狀,xbar,ybar,b,h,d,D,A,IxG,IyG,IxyG
 # 類型：add 或 hole
 # 形狀：rect / circle / tube / custom
 R1,add,rect,2,1,4,2,0,0,0,0,0,0
 R2,hole,circle,2,1,0,0,0.7,0,0,0,0,0</textarea>
-          <div class="small">
-            rect 使用 b,h；circle 使用 d；tube 使用 d,D；custom 使用 A,IxG,IyG,IxyG。<br>
-            單位可用 mm、cm、m，但全題要一致。
+            <div class="small">
+              rect 使用 b,h；circle 使用 d；tube 使用 d,D；custom 使用 A,IxG,IyG,IxyG。單位可用 mm、cm、m，但全題要一致。
+            </div>
+          </details>
+        </section>
+
+        <!-- 10-9 sector / polar coordinates -->
+        <section id="sector" class="panel">
+          <h3>10-9 扇形 / 極座標慣性矩</h3>
+          <div class="note">
+            這頁是為了習題 10-9 補強的題型。陰影面積為圓扇形，半徑為 r₀，
+            角度從 −α/2 到 +α/2，對稱於 x 軸。適合用極座標直接求 Ix、Iy。
           </div>
 
-          <div class="row">
-            <button onclick="addComponentLine('rect')">新增矩形列</button>
-            <button onclick="addComponentLine('circle')">新增圓形列</button>
+          <div class="formula">
+            極座標：x = r cosθ，y = r sinθ，dA = r dr dθ<br>
+            範圍：0 ≤ r ≤ r₀，−α/2 ≤ θ ≤ +α/2<br>
+            I<sub>y</sub> = ∫x²dA = ∫∫(r cosθ)² r dr dθ = r₀⁴(α + sinα)/8<br>
+            I<sub>x</sub> = ∫y²dA = ∫∫(r sinθ)² r dr dθ = r₀⁴(α − sinα)/8
           </div>
+
+          <div class="row3">
+            <div>
+              <label>半徑 r₀</label>
+              <input id="sectorR" type="number" value="1" step="any">
+            </div>
+            <div>
+              <label>總角度 α</label>
+              <input id="sectorAlpha" type="number" value="60" step="any">
+            </div>
+            <div>
+              <label>角度單位</label>
+              <select id="sectorUnit">
+                <option value="deg">度 degree</option>
+                <option value="rad">弧度 radian</option>
+              </select>
+            </div>
+          </div>
+
+          <label style="display:flex;align-items:center;gap:8px;margin-top:10px">
+            <input id="sectorShowCentroid" type="checkbox" style="width:auto" onchange="solveSector()">
+            顯示形心輔助線與 G 點
+          </label>
+
           <div class="row">
-            <button onclick="addComponentLine('tube')">新增中空圓列</button>
-            <button onclick="addComponentLine('custom')">新增自訂列</button>
+            <button onclick="solveSector()">計算 10-9 扇形題</button>
+            <button class="secondary" onclick="showSectorFormulaOnly()">只顯示符號公式</button>
+          </div>
+
+          <div class="small">
+            注意：公式中的 α 必須使用弧度。如果你選「度」，程式會自動換算成弧度。
+            題目若沒有給數字，可按「只顯示符號公式」作為解題推導。
           </div>
         </section>
 
@@ -392,34 +573,7 @@ R2,hole,circle,2,1,0,0,0.7,0,0,0,0,0</textarea>
           </div>
           <div id="massInputs"></div>
         </section>
-
-        <!-- photo -->
-        <section id="photo" class="panel">
-          <h3>拍照 / 上傳題目輔助解題</h3>
-          <div class="warn">
-            這是純前端 GitHub Pages 版本，不能直接放 AI API Key，所以不會自動辨識整張題目。
-            你可以上傳照片，在圖上標記點、量比例，再把尺寸輸入上方計算器完成解題。
-          </div>
-
-          <label>上傳題目照片</label>
-          <input id="photoInput" type="file" accept="image/*">
-          <div class="row">
-            <button onclick="setPhotoMode('point')">標點</button>
-            <button onclick="setPhotoMode('measure')">量距離</button>
-          </div>
-          <div class="row">
-            <button onclick="clearPhotoMarks()">清除標記</button>
-            <button onclick="copyMeasureToNote()">把量測結果加入說明</button>
-          </div>
-
-          <label>圖片標註說明</label>
-          <textarea id="photoNotes" placeholder="例：A 到 B 實際長度 100 mm，圖上量到 320 px，所以比例為 0.3125 mm/px。"></textarea>
-
-          <div class="small">
-            操作：上傳照片後，選「標點」可點出 A、B、C...；選「量距離」後連點兩點可得到像素距離。
-          </div>
-        </section>
-      </div>
+</div>
     </div>
 
     <div class="card">
@@ -429,7 +583,6 @@ R2,hole,circle,2,1,0,0,0.7,0,0,0,0,0</textarea>
           <div>
             <h3>圖形</h3>
             <div id="svgBox" class="svgbox"></div>
-            <canvas id="photoCanvas" height="420" style="display:none;margin-top:10px"></canvas>
           </div>
           <div>
             <h3>計算表</h3>
@@ -444,18 +597,13 @@ R2,hole,circle,2,1,0,0,0.7,0,0,0,0,0</textarea>
   </div>
 
   <div class="footer">
-    Static web app｜可部署到 GitHub Pages / Netlify / Vercel｜第十章慣性矩教學版
+    Static web app｜可部署到 GitHub Pages / Netlify / Vercel｜第十章慣性矩精進版（工程截面快速建模＋完整表格化步驟）
   </div>
 </div>
 
 <script>
 let activePanel = "basic";
 let lastComposite = null;
-let photoImg = null;
-let photoMarks = [];
-let photoMode = "point";
-let measureTemp = null;
-let lastMeasure = "";
 
 document.querySelectorAll(".tab").forEach(tab=>{
   tab.addEventListener("click",()=>{
@@ -465,8 +613,6 @@ document.querySelectorAll(".tab").forEach(tab=>{
     activePanel = tab.dataset.panel;
     document.getElementById(activePanel).classList.add("active");
     document.getElementById("activeBadge").textContent = tab.textContent.trim();
-    document.getElementById("photoCanvas").style.display = activePanel==="photo" ? "block" : "none";
-    if(activePanel==="photo") drawPhoto();
   });
 });
 
@@ -516,6 +662,314 @@ function renderMassInputs(){
   }
 }
 renderMassInputs();
+
+
+
+let lastEngineeringLines = "";
+
+function renderEngineeringInputs(){
+  const type = document.getElementById("engType").value;
+  const box = document.getElementById("engInputs");
+
+  if(type === "rect"){
+    box.innerHTML = `
+      <div class="row">
+        <div><label>寬 B</label><input id="engB" type="number" value="100" step="any"></div>
+        <div><label>高 H</label><input id="engH" type="number" value="60" step="any"></div>
+      </div>`;
+  }else if(type === "circle"){
+    box.innerHTML = `<label>直徑 D</label><input id="engD" type="number" value="80" step="any">`;
+  }else if(type === "ibeam"){
+    box.innerHTML = `
+      <div class="mini-grid">
+        <div><label>總高 H</label><input id="engH" type="number" value="300" step="any"></div>
+        <div><label>翼板寬 bf</label><input id="engBf" type="number" value="150" step="any"></div>
+        <div><label>翼板厚 tf</label><input id="engTf" type="number" value="20" step="any"></div>
+        <div><label>腹板厚 tw</label><input id="engTw" type="number" value="10" step="any"></div>
+      </div>
+      <div class="small">假設上下翼板相同且腹板置中，座標原點在截面左下角。</div>`;
+  }else if(type === "tbeam"){
+    box.innerHTML = `
+      <div class="mini-grid">
+        <div><label>總高 H</label><input id="engH" type="number" value="200" step="any"></div>
+        <div><label>翼板寬 bf</label><input id="engBf" type="number" value="120" step="any"></div>
+        <div><label>翼板厚 tf</label><input id="engTf" type="number" value="20" step="any"></div>
+        <div><label>腹板厚 tw</label><input id="engTw" type="number" value="12" step="any"></div>
+      </div>
+      <div class="small">T 型截面：翼板在上方，腹板置中，座標原點在外框左下角。</div>`;
+  }else if(type === "hrect"){
+    box.innerHTML = `
+      <div class="mini-grid">
+        <div><label>外寬 B</label><input id="engB" type="number" value="160" step="any"></div>
+        <div><label>外高 H</label><input id="engH" type="number" value="100" step="any"></div>
+        <div><label>內寬 b</label><input id="engBi" type="number" value="100" step="any"></div>
+        <div><label>內高 h</label><input id="engHi" type="number" value="60" step="any"></div>
+      </div>
+      <div class="small">內孔預設置中，以負面積扣除。</div>`;
+  }else if(type === "tube"){
+    box.innerHTML = `
+      <div class="row">
+        <div><label>外徑 D</label><input id="engD" type="number" value="100" step="any"></div>
+        <div><label>內徑 d</label><input id="engd" type="number" value="60" step="any"></div>
+      </div>`;
+  }
+}
+
+function getVal(id){ return parseFloat(document.getElementById(id).value) || 0; }
+
+function buildEngineeringLines(){
+  const type = document.getElementById("engType").value;
+  let lines = ["# 格式：名稱,類型,形狀,xbar,ybar,b,h,d,D,A,IxG,IyG,IxyG"];
+
+  if(type === "rect"){
+    const B=getVal("engB"), H=getVal("engH");
+    lines.push(`Rect,add,rect,${B/2},${H/2},${B},${H},0,0,0,0,0,0`);
+  }else if(type === "circle"){
+    const D=getVal("engD");
+    lines.push(`Circle,add,circle,${D/2},${D/2},0,0,${D},0,0,0,0,0`);
+  }else if(type === "ibeam"){
+    const H=getVal("engH"), bf=getVal("engBf"), tf=getVal("engTf"), tw=getVal("engTw");
+    const webH = H - 2*tf;
+    const cx = bf/2;
+    lines.push(`TopFlange,add,rect,${cx},${H-tf/2},${bf},${tf},0,0,0,0,0,0`);
+    lines.push(`Web,add,rect,${cx},${tf+webH/2},${tw},${webH},0,0,0,0,0,0`);
+    lines.push(`BottomFlange,add,rect,${cx},${tf/2},${bf},${tf},0,0,0,0,0,0`);
+  }else if(type === "tbeam"){
+    const H=getVal("engH"), bf=getVal("engBf"), tf=getVal("engTf"), tw=getVal("engTw");
+    const webH = H - tf;
+    const cx = bf/2;
+    lines.push(`Flange,add,rect,${cx},${H-tf/2},${bf},${tf},0,0,0,0,0,0`);
+    lines.push(`Web,add,rect,${cx},${webH/2},${tw},${webH},0,0,0,0,0,0`);
+  }else if(type === "hrect"){
+    const B=getVal("engB"), H=getVal("engH"), bi=getVal("engBi"), hi=getVal("engHi");
+    lines.push(`Outer,add,rect,${B/2},${H/2},${B},${H},0,0,0,0,0,0`);
+    lines.push(`InnerHole,hole,rect,${B/2},${H/2},${bi},${hi},0,0,0,0,0,0`);
+  }else if(type === "tube"){
+    const D=getVal("engD"), d=getVal("engd");
+    lines.push(`Tube,add,tube,${D/2},${D/2},0,0,${d},${D},0,0,0,0`);
+  }
+  return lines.join("\n");
+}
+
+function buildEngineeringSection(){
+  lastEngineeringLines = buildEngineeringLines();
+  document.getElementById("componentsText").value = lastEngineeringLines;
+  updateComponentList();
+  solveComposite();
+
+  const type = document.getElementById("engType").value;
+  const typeText = document.getElementById("engType").selectedOptions[0].textContent;
+  let referenceNote = "";
+
+  if((type === "tbeam" || type === "ibeam") && lastComposite){
+    const H = getVal("engH");
+    const yFromBottom = lastComposite.ybar;
+    const yFromTop = H - yFromBottom;
+
+    referenceNote =
+`
+【形心位置基準提醒】
+本系統表格中的 ȳ 是「從截面最底部往上量」：
+ȳ_bottom = ${fmt(yFromBottom)}
+
+若課本圖上的 ȳ 是「從截面最上方往下量」：
+ȳ_top = H − ȳ_bottom
+      = ${fmt(H)} − ${fmt(yFromBottom)}
+      = ${fmt(yFromTop)}
+
+所以像習題 10-17，課本答案 ȳ = 52.5 mm，是從上表面往下量；
+系統原本顯示的 117.5 mm，是從底部往上量。兩者是同一個形心位置。`;
+
+    document.getElementById("tableBox").innerHTML +=
+      `<br><div class="note"><b>形心位置基準提醒：</b><br>
+      從底部往上量 ȳ = ${fmt(yFromBottom)}；從上方往下量 ȳ = ${fmt(yFromTop)}。
+      若課本標示由上往下，請看 ${fmt(yFromTop)}。</div>`;
+  }
+
+  const old = document.getElementById("output").textContent;
+  document.getElementById("output").textContent =
+`【工程截面快速建模】
+
+截面類型：${typeText}
+
+系統已將此截面自動拆成子面積，並完成以下工作：
+1) 自動計算各子截面的 A、IxG、IyG
+2) 自動計算整體形心 x̄、ȳ
+3) 套用平行軸定理求整體形心軸 Ix、Iy
+4) 計算轉動半徑 kx、ky
+${referenceNote}
+
+子截面資料：
+${lastEngineeringLines}
+
+` + old;
+}
+
+function sendEngineeringToComposite(){
+  lastEngineeringLines = buildEngineeringLines();
+  document.getElementById("componentsText").value = lastEngineeringLines;
+  updateComponentList();
+  document.querySelectorAll(".tab").forEach(t=>{ if(t.dataset.panel==="composite") t.click(); });
+}
+
+function openEngineeringPreset(type){
+  document.querySelectorAll(".tab").forEach(t=>{ if(t.dataset.panel==="engineering") t.click(); });
+  document.getElementById("engType").value = type;
+  renderEngineeringInputs();
+  buildEngineeringSection();
+}
+
+function setIfExists(id,value){
+  const el = document.getElementById(id);
+  if(el) el.value = value;
+}
+
+function parseEngineeringText(){
+  const text = document.getElementById("engTextInput").value.toLowerCase();
+  if(!text.trim()){
+    alert("請先輸入題目文字，例如：I型鋼 H=300 bf=150 tf=20 tw=10");
+    return;
+  }
+
+  let type = "rect";
+  if(text.includes("i型") || text.includes("i-beam") || text.includes("ibeam") || text.includes("i section")) type = "ibeam";
+  else if(text.includes("t型") || text.includes("t-beam") || text.includes("tbeam") || text.includes("t section")) type = "tbeam";
+  else if(text.includes("中空矩形") || text.includes("方管") || text.includes("hollow rectangle")) type = "hrect";
+  else if(text.includes("圓管") || text.includes("中空圓") || text.includes("tube")) type = "tube";
+  else if(text.includes("圓") || text.includes("circle")) type = "circle";
+  else if(text.includes("矩形") || text.includes("rectangle")) type = "rect";
+
+  document.getElementById("engType").value = type;
+  renderEngineeringInputs();
+
+  function grab(keys, fallback=0){
+    for(const k of keys){
+      const re = new RegExp(`${k}\\s*[=:：]?\\s*([0-9.]+)`, "i");
+      const m = text.match(re);
+      if(m) return parseFloat(m[1]);
+    }
+    return fallback;
+  }
+
+  if(type==="rect"){
+    setIfExists("engB", grab(["B","b","寬"], 100));
+    setIfExists("engH", grab(["H","h","高"], 60));
+  }else if(type==="circle"){
+    setIfExists("engD", grab(["D","d","直徑"], 80));
+  }else if(type==="ibeam" || type==="tbeam"){
+    setIfExists("engH", grab(["H","總高","高"], type==="ibeam"?300:200));
+    setIfExists("engBf", grab(["bf","Bf","翼板寬","翼寬"], type==="ibeam"?150:120));
+    setIfExists("engTf", grab(["tf","Tf","翼板厚","翼厚"], 20));
+    setIfExists("engTw", grab(["tw","Tw","腹板厚","腹厚"], type==="ibeam"?10:12));
+  }else if(type==="hrect"){
+    setIfExists("engB", grab(["B","外寬"], 160));
+    setIfExists("engH", grab(["H","外高"], 100));
+    setIfExists("engBi", grab(["bi","b","內寬"], 100));
+    setIfExists("engHi", grab(["hi","h","內高"], 60));
+  }else if(type==="tube"){
+    setIfExists("engD", grab(["D","外徑"], 100));
+    setIfExists("engd", grab(["d","內徑"], 60));
+  }
+
+  buildEngineeringSection();
+}
+
+function renderQuickComponentInputs(){
+  const shape = document.getElementById("quickShape").value;
+  const box = document.getElementById("quickShapeInputs");
+  if(shape === "rect"){
+    box.innerHTML = `<div class="row">
+      <div><label>寬 b</label><input id="quickB" type="number" value="100" step="any"></div>
+      <div><label>高 h</label><input id="quickH" type="number" value="50" step="any"></div>
+    </div>`;
+  }else if(shape === "circle"){
+    box.innerHTML = `<label>直徑 d</label><input id="quickd" type="number" value="50" step="any">`;
+  }else if(shape === "tube"){
+    box.innerHTML = `<div class="row">
+      <div><label>內徑 d</label><input id="quickd" type="number" value="30" step="any"></div>
+      <div><label>外徑 D</label><input id="quickD" type="number" value="60" step="any"></div>
+    </div>`;
+  }else if(shape === "rtriBR"){
+    box.innerHTML = `<div class="row">
+      <div><label>底 b</label><input id="quickB" type="number" value="300" step="any"></div>
+      <div><label>高 h</label><input id="quickH" type="number" value="200" step="any"></div>
+    </div>
+    <div class="small">此三角形為課本 10-15/16 左側三角形：底邊在下方、右側為垂直邊。</div>`;
+  }else{
+    box.innerHTML = `<div class="row4">
+      <div><label>A</label><input id="quickA" type="number" value="1000" step="any"></div>
+      <div><label>IxG</label><input id="quickIxG" type="number" value="20000" step="any"></div>
+      <div><label>IyG</label><input id="quickIyG" type="number" value="8000" step="any"></div>
+      <div><label>IxyG</label><input id="quickIxyG" type="number" value="0" step="any"></div>
+    </div>`;
+  }
+}
+
+function addQuickComponent(){
+  const name = (document.getElementById("quickName").value || "A1").trim();
+  const kind = document.getElementById("quickKind").value;
+  const shape = document.getElementById("quickShape").value;
+  const x = parseFloat(document.getElementById("quickX").value) || 0;
+  const y = parseFloat(document.getElementById("quickY").value) || 0;
+
+  let b=0,h=0,d=0,D=0,A=0,IxG=0,IyG=0,IxyG=0;
+  if(shape==="rect" || shape==="rtriBR"){
+    b = parseFloat(document.getElementById("quickB").value) || 0;
+    h = parseFloat(document.getElementById("quickH").value) || 0;
+  }else if(shape==="circle"){
+    d = parseFloat(document.getElementById("quickd").value) || 0;
+  }else if(shape==="tube"){
+    d = parseFloat(document.getElementById("quickd").value) || 0;
+    D = parseFloat(document.getElementById("quickD").value) || 0;
+  }else{
+    A = parseFloat(document.getElementById("quickA").value) || 0;
+    IxG = parseFloat(document.getElementById("quickIxG").value) || 0;
+    IyG = parseFloat(document.getElementById("quickIyG").value) || 0;
+    IxyG = parseFloat(document.getElementById("quickIxyG").value) || 0;
+  }
+
+  const line = `${name},${kind},${shape},${x},${y},${b},${h},${d},${D},${A},${IxG},${IyG},${IxyG}`;
+  const txt = document.getElementById("componentsText");
+  const current = txt.value.trim();
+  if(current.includes("#") && current.split(/\n/).filter(l=>l.trim() && !l.trim().startsWith("#")).length === 0){
+    txt.value = current + "\n" + line;
+  }else if(current.includes("R1,add,rect,2,1,4,2") && current.includes("R2,hole,circle,2,1")){
+    txt.value = "# 格式：名稱,類型,形狀,xbar,ybar,b,h,d,D,A,IxG,IyG,IxyG\n" + line;
+  }else{
+    txt.value = current + (current ? "\n" : "") + line;
+  }
+  updateComponentList();
+  solveComposite();
+  const n = document.getElementById("componentsText").value.split(/\n/).filter(l=>l.trim() && !l.trim().startsWith("#")).length + 1;
+  document.getElementById("quickName").value = `A${n}`;
+}
+
+function clearComponents(){
+  document.getElementById("componentsText").value = "# 格式：名稱,類型,形狀,xbar,ybar,b,h,d,D,A,IxG,IyG,IxyG";
+  updateComponentList();
+  document.getElementById("tableBox").innerHTML = "";
+  document.getElementById("svgBox").innerHTML = "";
+  document.getElementById("output").textContent = "已清空子面積，請用上方表單重新加入。";
+}
+
+function updateComponentList(){
+  const lines = document.getElementById("componentsText").value.split(/\n/).filter(l=>l.trim() && !l.trim().startsWith("#"));
+  if(lines.length === 0){
+    document.getElementById("componentList").innerHTML = "尚未加入子面積。";
+    return;
+  }
+  const rows = lines.map(line=>{
+    const p=line.split(",").map(x=>x.trim());
+    return `<tr><td>${p[0]||""}</td><td>${p[1]==="hole"?"扣除孔洞":"加入面積"}</td><td>${p[2]||""}</td><td>${p[3]||""}</td><td>${p[4]||""}</td></tr>`;
+  }).join("");
+  document.getElementById("componentList").innerHTML =
+    `<table><thead><tr><th>名稱</th><th>類型</th><th>形狀</th><th>x̄i</th><th>ȳi</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+function openCurveSqrt(){
+  document.querySelectorAll(".tab").forEach(t=>{ if(t.dataset.panel==="curve") t.click(); });
+  loadCurveSqrtExample();
+}
 
 function shapePropsBasic(){
   const t=document.getElementById("shapeType").value;
@@ -582,6 +1036,212 @@ function solveBasic(){
   drawBasicShape();
 }
 
+
+function safeExprToFn(expr){
+  let e = String(expr || "0").trim().replace(/\^/g,"**");
+  return function(x){
+    const sqrt=Math.sqrt, sin=Math.sin, cos=Math.cos, tan=Math.tan;
+    const exp=Math.exp, log=Math.log, abs=Math.abs;
+    const asin=Math.asin, acos=Math.acos, atan=Math.atan;
+    const pi=Math.PI, PI=Math.PI, E=Math.E;
+    return Function("x","sqrt","sin","cos","tan","exp","log","abs","asin","acos","atan","pi","PI","E",
+      `"use strict"; return (${e});`)(x,sqrt,sin,cos,tan,exp,log,abs,asin,acos,atan,pi,PI,E);
+  };
+}
+
+function integrateSimpson(fn,a,b,n=4000){
+  if(n%2===1) n++;
+  const h=(b-a)/n;
+  let sum=fn(a)+fn(b);
+  for(let i=1;i<n;i++){
+    const x=a+i*h;
+    sum += (i%2===0 ? 2 : 4)*fn(x);
+  }
+  return sum*h/3;
+}
+
+function loadCurveSqrtExample(){
+  document.getElementById("curveYTop").value="sqrt(x)";
+  document.getElementById("curveYBottom").value="0";
+  document.getElementById("curveA").value="0";
+  document.getElementById("curveB").value="1";
+  solveCurveArea();
+}
+
+function solveCurveArea(){
+  try{
+    const a=num("curveA"), b=num("curveB");
+    const topExpr=document.getElementById("curveYTop").value;
+    const botExpr=document.getElementById("curveYBottom").value;
+    const yt=safeExprToFn(topExpr);
+    const yb=safeExprToFn(botExpr);
+    const h=x=>yt(x)-yb(x);
+
+    const A=integrateSimpson(x=>h(x),a,b);
+    const Qy=integrateSimpson(x=>x*h(x),a,b);
+    const Qx=integrateSimpson(x=>0.5*(yt(x)**2-yb(x)**2),a,b);
+    const xbar=Qy/A, ybar=Qx/A;
+
+    const IxO=integrateSimpson(x=>(yt(x)**3-yb(x)**3)/3,a,b);
+    const IyO=integrateSimpson(x=>x*x*h(x),a,b);
+    const IxyO=integrateSimpson(x=>0.5*x*(yt(x)**2-yb(x)**2),a,b);
+
+    const IxG=IxO-A*ybar*ybar;
+    const IyG=IyO-A*xbar*xbar;
+    const IxyG=IxyO-A*xbar*ybar;
+    const kx=Math.sqrt(Math.abs(IxG/A));
+    const ky=Math.sqrt(Math.abs(IyG/A));
+
+    lastComposite={At:A,xbar,ybar,IxO,IyO,IxyO,IxG,IyG,IxyG,kx,ky,comps:[]};
+
+    document.getElementById("tableBox").innerHTML=htmlTable(["項目","數值"],[
+      ["A",fmt(A)],["x̄",fmt(xbar)],["ȳ",fmt(ybar)],
+      ["Ix 原本 x 軸",fmt(IxO)],["Iy 原本 y 軸",fmt(IyO)],["Ixy 原本 xy 軸",fmt(IxyO)],
+      ["Ix′ 形心 x′ 軸",fmt(IxG)],["Iy′ 形心 y′ 軸",fmt(IyG)],["Ixy′ 形心軸",fmt(IxyG)],
+      ["kx",fmt(kx)],["ky",fmt(ky)]
+    ]);
+
+    const normalizedTop=topExpr.replace(/\s/g,"").replace(/\^/g,"**").toLowerCase();
+    const isSqrtEx=(Math.abs(a)<1e-12 && Math.abs(b-1)<1e-12 &&
+      (normalizedTop==="sqrt(x)" || normalizedTop==="x**0.5" || normalizedTop==="x**(1/2)") &&
+      Math.abs(integrateSimpson(x=>yb(x),a,b))<1e-12);
+
+    const exactText = isSqrtEx ? `
+本題 y = √x, 0 ≤ x ≤ 1 的分數答案：
+A = 2/3
+x̄ = 3/5
+ȳ = 3/8
+Ix = 2/15
+Iy = 2/7
+Ixy = 1/6
+Ix′ = 19/480
+Iy′ = 8/175
+Ixy′ = 1/60` : "";
+
+    document.getElementById("output").textContent =
+`【曲線面積直接解題】
+
+輸入：
+y上 = ${topExpr}
+y下 = ${botExpr}
+x 範圍：${fmt(a)} ≤ x ≤ ${fmt(b)}
+
+1) 面積：
+A = ∫(y上-y下)dx = ${fmt(A)}
+
+2) 形心：
+x̄ = (1/A)∫x(y上-y下)dx = ${fmt(xbar)}
+ȳ = (1/A)∫1/2(y上²-y下²)dx = ${fmt(ybar)}
+
+3) 對原本 x、y 軸：
+Ix = ∫1/3(y上³-y下³)dx = ${fmt(IxO)}
+Iy = ∫x²(y上-y下)dx = ${fmt(IyO)}
+Ixy = ∫1/2·x(y上²-y下²)dx = ${fmt(IxyO)}
+
+4) 轉到形心軸：
+Ix′ = Ix - Aȳ² = ${fmt(IxG)}
+Iy′ = Iy - Ax̄² = ${fmt(IyG)}
+Ixy′ = Ixy - Ax̄ȳ = ${fmt(IxyG)}
+${exactText}`;
+
+    drawCurveArea(yt,yb,a,b,xbar,ybar);
+  }catch(err){
+    document.getElementById("output").textContent="曲線計算失敗："+err.message+"\\n請檢查輸入，例如 sqrt(x)、x^0.5、x**0.5。";
+  }
+}
+
+function drawCurveArea(yt,yb,a,b,xg,yg){
+  const W=640,H=360,pad=62,samples=220;
+  let ptsTop=[],ptsBot=[],ys=[];
+  for(let i=0;i<=samples;i++){
+    const x=a+(b-a)*i/samples, yTop=yt(x), yBot=yb(x);
+    ptsTop.push([x,yTop]); ptsBot.push([x,yBot]); ys.push(yTop,yBot);
+  }
+
+  // 課本圖模式：x、y 等比例，而且把 1m x 1m 畫成接近正方形。
+  const minx=Math.min(0,a), maxx=b;
+  const miny=Math.min(0,...ys), maxy=Math.max(0,...ys);
+  const spanX=maxx-minx || 1;
+  const spanY=maxy-miny || 1;
+  const s=Math.min((W-2*pad-80)/spanX, (H-2*pad-30)/spanY);
+
+  const usedW=spanX*s, usedH=spanY*s;
+  const ox=(W-usedW)/2 - 10;
+  const oy=(H-usedH)/2 + 4;
+
+  const X=x=>ox+(x-minx)*s;
+  const Y=y=>H-oy-(y-miny)*s;
+
+  let path="";
+  ptsTop.forEach((p,i)=>{path+=(i===0?"M":"L")+X(p[0])+" "+Y(p[1])+" ";});
+  for(let i=ptsBot.length-1;i>=0;i--){const p=ptsBot[i];path+="L"+X(p[0])+" "+Y(p[1])+" ";}
+  path+="Z";
+
+  const topLine=ptsTop.map((p,i)=>(i===0?"M":"L")+X(p[0])+" "+Y(p[1])).join(" ");
+  const botLine=ptsBot.map((p,i)=>(i===0?"M":"L")+X(p[0])+" "+Y(p[1])).join(" ");
+
+  const xAxisY=Y(0);
+  const yAxisX=X(0);
+  const rightX=X(b);
+  const topY=Y(yt(b));
+  const dimOffset=38;
+  const showG = document.getElementById("showCentroidLines") && document.getElementById("showCentroidLines").checked;
+
+  const topExpr = document.getElementById("curveYTop") ? document.getElementById("curveYTop").value.replace(/\s/g,"") : "";
+  let curveLabel = "y = f(x)";
+  if(topExpr==="sqrt(x)" || topExpr==="x^(1/2)" || topExpr==="x**(1/2)" || topExpr==="x^0.5" || topExpr==="x**0.5"){
+    curveLabel = "y = x¹ᐟ²";
+  }else if(topExpr){
+    curveLabel = "y = " + topExpr.replace("sqrt(x)","√x");
+  }
+
+  let gLines = "";
+  if(showG){
+    gLines = `
+      <line x1="${X(xg)}" y1="${Y(miny)-6}" x2="${X(xg)}" y2="${Y(maxy)+6}" stroke="#dc2626" stroke-dasharray="5,5"/>
+      <line x1="${X(minx)-6}" y1="${Y(yg)}" x2="${X(maxx)+6}" y2="${Y(yg)}" stroke="#dc2626" stroke-dasharray="5,5"/>
+      <circle cx="${X(xg)}" cy="${Y(yg)}" r="5" fill="#dc2626"/>
+      <text x="${X(xg)+8}" y="${Y(yg)-8}" fill="#dc2626" font-size="15">G(${fmt(xg)}, ${fmt(yg)})</text>`;
+  }
+
+  document.getElementById("svgBox").innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" height="360" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrowDim" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto-start-reverse">
+      <path d="M0,0 L8,4 L0,8 z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect width="${W}" height="${H}" fill="#fff"/>
+
+  <!-- 座標軸 -->
+  <line x1="${yAxisX-12}" y1="${xAxisY}" x2="${rightX+28}" y2="${xAxisY}" stroke="#0f172a" stroke-width="2.4"/>
+  <line x1="${yAxisX}" y1="${xAxisY+12}" x2="${yAxisX}" y2="${topY-28}" stroke="#0f172a" stroke-width="2.4"/>
+
+  <!-- 陰影面積與曲線 -->
+  <path d="${path}" fill="#9ec5f4" opacity="0.72"/>
+  <path d="${topLine}" fill="none" stroke="#1d4ed8" stroke-width="3.2"/>
+  <path d="${botLine}" fill="none" stroke="#0f172a" stroke-width="2.2"/>
+  <line x1="${rightX}" y1="${xAxisY}" x2="${rightX}" y2="${topY}" stroke="#0f172a" stroke-width="2.2"/>
+
+  <!-- 尺寸線：底部 1 m -->
+  <line x1="${yAxisX}" y1="${xAxisY+dimOffset}" x2="${rightX}" y2="${xAxisY+dimOffset}" stroke="#475569" stroke-width="1.8" marker-start="url(#arrowDim)" marker-end="url(#arrowDim)"/>
+  <line x1="${yAxisX}" y1="${xAxisY+7}" x2="${yAxisX}" y2="${xAxisY+dimOffset+10}" stroke="#475569" stroke-width="1.5"/>
+  <line x1="${rightX}" y1="${xAxisY+7}" x2="${rightX}" y2="${xAxisY+dimOffset+10}" stroke="#475569" stroke-width="1.5"/>
+  <text x="${(yAxisX+rightX)/2-12}" y="${xAxisY+dimOffset+25}" fill="#334155" font-size="17">1 m</text>
+
+  <!-- 尺寸線：右側 1 m -->
+  <line x1="${rightX+dimOffset}" y1="${xAxisY}" x2="${rightX+dimOffset}" y2="${topY}" stroke="#475569" stroke-width="1.8" marker-start="url(#arrowDim)" marker-end="url(#arrowDim)"/>
+  <line x1="${rightX+7}" y1="${xAxisY}" x2="${rightX+dimOffset+10}" y2="${xAxisY}" stroke="#475569" stroke-width="1.5"/>
+  <line x1="${rightX+7}" y1="${topY}" x2="${rightX+dimOffset+10}" y2="${topY}" stroke="#475569" stroke-width="1.5"/>
+  <text x="${rightX+dimOffset+10}" y="${(xAxisY+topY)/2+5}" fill="#334155" font-size="17">1 m</text>
+
+  <!-- 標註 -->
+  <text x="${rightX+34}" y="${xAxisY-6}" fill="#0f172a" font-size="17">x</text>
+  <text x="${yAxisX+8}" y="${topY-34}" fill="#0f172a" font-size="17">y</text>
+  <text x="${X(0.35*(b-a)+a)}" y="${Y(yt(0.35*(b-a)+a))-18}" fill="#1d4ed8" font-size="17">${curveLabel}</text>
+  ${gLines}
+  </svg>`;
+}
+
 function drawBasicShape(){
   const t=document.getElementById("shapeType").value;
   let svg=`<svg viewBox="0 0 640 360" width="100%" height="360" xmlns="http://www.w3.org/2000/svg">
@@ -634,6 +1294,14 @@ function parseComponents(){
       A=Math.PI*d*d/4; IxG=Math.PI*Math.pow(d,4)/64; IyG=IxG; IxyG=0;
     }else if(shape==="tube"){
       A=Math.PI*(D*D-d*d)/4; IxG=Math.PI*(Math.pow(D,4)-Math.pow(d,4))/64; IyG=IxG; IxyG=0;
+    }else if(shape==="rtriBR"){
+      // Right triangle used in textbook 10-15/16:
+      // vertices are (x0,y0), (x0+b,y0), (x0+b,y0+h)
+      // centroid is (x0+2b/3, y0+h/3)
+      A=b*h/2;
+      IxG=b*Math.pow(h,3)/36;
+      IyG=h*Math.pow(b,3)/36;
+      IxyG=Math.pow(b,2)*Math.pow(h,2)/72;
     }
     const sign = kind.toLowerCase()==="hole" ? -1 : 1;
     comps.push({name,kind,shape,xbar,ybar,b,h,d,D,A:sign*A,IxG:sign*IxG,IyG:sign*IyG,IxyG:sign*IxyG});
@@ -666,6 +1334,9 @@ function solveComposite(){
     htmlTable(["名稱","類型","形狀","A","x̄i","ȳi","IxO","IyO","IxyO"],rows) +
     "<br>" + htmlTable(["總結果","數值"],[
       ["A total",fmt(At)],["x̄",fmt(xbar)],["ȳ",fmt(ybar)],
+      ["IxO 原本 x 軸（題目 10-15 看這列）",fmt(IxO)],
+      ["IyO 原本 y 軸（題目 10-16 看這列）",fmt(IyO)],
+      ["IxyO 原本 xy 軸",fmt(IxyO)],
       ["Ix about centroid",fmt(IxG)],["Iy about centroid",fmt(IyG)],["Ixy about centroid",fmt(IxyG)],
       ["kx",fmt(kx)],["ky",fmt(ky)]
     ]);
@@ -680,10 +1351,13 @@ function solveComposite(){
    x̄ = Σ(Ai xi)/ΣAi = ${fmt(xbar)}
    ȳ = Σ(Ai yi)/ΣAi = ${fmt(ybar)}
 
-4) 對原點 O 使用平行軸定理：
+4) 對原點 O，也就是題目圖上的 x、y 軸，使用平行軸定理：
    IxO = Σ(IxGi + Ai yi²) = ${fmt(IxO)}
    IyO = Σ(IyGi + Ai xi²) = ${fmt(IyO)}
    IxyO = Σ(IxyGi + Ai xi yi) = ${fmt(IxyO)}
+
+   注意：若題目問「對 x 軸 / y 軸」，請看 IxO / IyO，
+   不要看 Ix about centroid / Iy about centroid。
 
 5) 轉到組合形心軸：
    IxG = IxO - Aȳ² = ${fmt(IxG)}
@@ -701,6 +1375,10 @@ function drawComposite(comps,xg,yg){
   let xs=[],ys=[];
   comps.forEach(c=>{
     if(c.shape==="rect"){ xs.push(c.xbar-c.b/2,c.xbar+c.b/2); ys.push(c.ybar-c.h/2,c.ybar+c.h/2); }
+    else if(c.shape==="rtriBR"){
+      const x0=c.xbar-2*c.b/3, y0=c.ybar-c.h/3;
+      xs.push(x0,x0+c.b); ys.push(y0,y0+c.h);
+    }
     else { let r=(c.shape==="tube"?c.D:c.d)/2 || 1; xs.push(c.xbar-r,c.xbar+r); ys.push(c.ybar-r,c.ybar+r); }
   });
   const minx=Math.min(...xs), maxx=Math.max(...xs), miny=Math.min(...ys), maxy=Math.max(...ys);
@@ -714,6 +1392,10 @@ function drawComposite(comps,xg,yg){
     const stroke=c.kind.toLowerCase()==="hole"?"#dc2626":"#1d4ed8";
     if(c.shape==="rect"){
       svg+=`<rect x="${X(c.xbar-c.b/2)}" y="${Y(c.ybar+c.h/2)}" width="${c.b*s}" height="${c.h*s}" fill="${fill}" stroke="${stroke}" stroke-width="3"/>`;
+    }else if(c.shape==="rtriBR"){
+      const x0=c.xbar-2*c.b/3, y0=c.ybar-c.h/3;
+      const pts=`${X(x0)},${Y(y0)} ${X(x0+c.b)},${Y(y0)} ${X(x0+c.b)},${Y(y0+c.h)}`;
+      svg+=`<polygon points="${pts}" fill="${fill}" stroke="${stroke}" stroke-width="3"/>`;
     }else{
       let r=((c.shape==="tube"?c.D:c.d)/2 || 1)*s;
       svg+=`<circle cx="${X(c.xbar)}" cy="${Y(c.ybar)}" r="${r}" fill="${fill}" stroke="${stroke}" stroke-width="3"/>`;
@@ -739,6 +1421,218 @@ function addComponentLine(shape){
   else if(shape==="tube") line=`T${n},add,tube,0,0,0,0,30,60,0,0,0,0`;
   else line=`U${n},add,custom,0,0,0,0,0,0,1000,20000,8000,0`;
   txt.value += "\n" + line;
+}
+
+
+function openSectorExample(){
+  document.querySelectorAll(".tab").forEach(t=>{ if(t.dataset.panel==="sector") t.click(); });
+  document.getElementById("sectorR").value = 1;
+  document.getElementById("sectorAlpha").value = 60;
+  document.getElementById("sectorUnit").value = "deg";
+  solveSector();
+}
+
+function sectorAlphaRad(){
+  const raw = parseFloat(document.getElementById("sectorAlpha").value) || 0;
+  const unit = document.getElementById("sectorUnit").value;
+  return unit === "deg" ? raw * Math.PI / 180 : raw;
+}
+
+function solveSector(){
+  const r0 = parseFloat(document.getElementById("sectorR").value) || 0;
+  const alphaRaw = parseFloat(document.getElementById("sectorAlpha").value) || 0;
+  const unit = document.getElementById("sectorUnit").value;
+  const alpha = sectorAlphaRad();
+
+  if(r0 <= 0 || alpha <= 0){
+    document.getElementById("output").textContent = "請輸入 r₀ > 0 且 α > 0。";
+    return;
+  }
+
+  const A = 0.5 * r0 * r0 * alpha;
+  const Ix = Math.pow(r0,4) * (alpha - Math.sin(alpha)) / 8;
+  const Iy = Math.pow(r0,4) * (alpha + Math.sin(alpha)) / 8;
+  const JO = Ix + Iy;
+  const xbar = 4 * r0 * Math.sin(alpha/2) / (3 * alpha);
+  const ybar = 0;
+  const IxG = Ix; // symmetry about x-axis, ybar=0
+  const IyG = Iy - A * xbar * xbar;
+  const kx = Math.sqrt(Math.abs(Ix/A));
+  const ky = Math.sqrt(Math.abs(Iy/A));
+  const kxG = Math.sqrt(Math.abs(IxG/A));
+  const kyG = Math.sqrt(Math.abs(IyG/A));
+
+  document.getElementById("tableBox").innerHTML = htmlTable(["項目","數值"],[
+    ["r₀", fmt(r0)],
+    ["α input", fmt(alphaRaw) + (unit==="deg" ? "°" : " rad")],
+    ["α radians", fmt(alpha)],
+    ["A = 1/2 r₀²α", fmt(A)],
+    ["x̄ = 4r₀sin(α/2)/(3α)", fmt(xbar)],
+    ["ȳ", fmt(ybar)],
+    ["Ix about x-axis", fmt(Ix)],
+    ["Iy about y-axis", fmt(Iy)],
+    ["JO = Ix + Iy", fmt(JO)],
+    ["IxG", fmt(IxG)],
+    ["IyG = Iy - A x̄²", fmt(IyG)],
+    ["kx about x-axis", fmt(kx)],
+    ["ky about y-axis", fmt(ky)],
+    ["kxG", fmt(kxG)],
+    ["kyG", fmt(kyG)]
+  ]);
+
+  document.getElementById("output").textContent =
+`【習題 10-9：扇形 / 極座標慣性矩】
+
+題型判斷：
+陰影面積是以 O 為圓心、半徑 r₀ 的扇形，總角度為 α，並且對稱於 x 軸。
+因此最適合使用極座標。
+
+輸入：
+r₀ = ${fmt(r0)}
+α = ${fmt(alphaRaw)} ${unit==="deg" ? "degree" : "radian"} = ${fmt(alpha)} rad
+
+1) 建立極座標範圍：
+   0 ≤ r ≤ r₀
+   −α/2 ≤ θ ≤ +α/2
+
+2) 面積：
+   A = ∫∫ dA
+     = ∫[-α/2 to α/2] ∫[0 to r₀] r dr dθ
+     = 1/2 r₀² α
+     = ${fmt(A)}
+
+3) 對 y 軸的慣性矩：
+   Iy = ∫ x² dA
+      = ∫∫ (r cosθ)² r dr dθ
+      = (r₀⁴/4) ∫[-α/2 to α/2] cos²θ dθ
+      = r₀⁴(α + sinα)/8
+      = ${fmt(Iy)}
+
+4) 對 x 軸的慣性矩：
+   Ix = ∫ y² dA
+      = ∫∫ (r sinθ)² r dr dθ
+      = r₀⁴(α − sinα)/8
+      = ${fmt(Ix)}
+
+5) 形心位置：
+   由對稱可知 ȳ = 0
+   x̄ = 4r₀sin(α/2)/(3α)
+      = ${fmt(xbar)}
+
+6) 轉到形心 y' 軸：
+   IyG = Iy − A x̄²
+       = ${fmt(Iy)} − ${fmt(A)}(${fmt(xbar)})²
+       = ${fmt(IyG)}
+
+【本題若問 10-9 對 y 軸慣性矩】
+答案看 Iy = ${fmt(Iy)}。`;
+
+  drawSector(r0, alpha, xbar);
+}
+
+function showSectorFormulaOnly(){
+  document.getElementById("tableBox").innerHTML = htmlTable(["項目","符號公式"],[
+    ["A", "A = 1/2 r₀² α"],
+    ["x̄", "x̄ = 4r₀ sin(α/2)/(3α)"],
+    ["ȳ", "0"],
+    ["Ix", "Ix = r₀⁴(α − sinα)/8"],
+    ["Iy", "Iy = r₀⁴(α + sinα)/8"],
+    ["JO", "JO = r₀⁴α/4"],
+    ["IyG", "IyG = Iy − A x̄²"]
+  ]);
+
+  document.getElementById("output").textContent =
+`【習題 10-9 符號推導】
+
+極座標設定：
+x = r cosθ
+y = r sinθ
+dA = r dr dθ
+
+範圍：
+0 ≤ r ≤ r₀
+−α/2 ≤ θ ≤ +α/2
+
+對 y 軸：
+Iy = ∫x²dA
+   = ∫[-α/2 to α/2] ∫[0 to r₀] (r cosθ)² r dr dθ
+   = (r₀⁴/4) ∫[-α/2 to α/2] cos²θ dθ
+   = r₀⁴(α + sinα)/8
+
+對 x 軸：
+Ix = ∫y²dA
+   = ∫[-α/2 to α/2] ∫[0 to r₀] (r sinθ)² r dr dθ
+   = r₀⁴(α − sinα)/8
+
+注意：α 必須使用弧度。`;
+
+  const r0 = parseFloat(document.getElementById("sectorR").value) || 1;
+  const alpha = sectorAlphaRad() || Math.PI/3;
+  drawSector(r0, alpha, 4*r0*Math.sin(alpha/2)/(3*alpha));
+}
+
+function drawSector(r0, alpha, xbar){
+  const W=640,H=360;
+  const originX=150, originY=180;
+  const radiusPix=130;
+  const start=-alpha/2, end=alpha/2;
+  const N=100;
+  const showG = document.getElementById("sectorShowCentroid") && document.getElementById("sectorShowCentroid").checked;
+
+  function X(r,th){ return originX + (r/r0)*radiusPix*Math.cos(th); }
+  function Y(r,th){ return originY - (r/r0)*radiusPix*Math.sin(th); }
+
+  let path = `M ${originX} ${originY} `;
+  for(let i=0;i<=N;i++){
+    const th = start + (end-start)*i/N;
+    path += `L ${X(r0,th)} ${Y(r0,th)} `;
+  }
+  path += "Z";
+
+  const topX=X(r0,end), topY=Y(r0,end);
+  const botX=X(r0,start), botY=Y(r0,start);
+  const midX=X(r0,0), midY=Y(r0,0);
+
+  let gPart = "";
+  if(showG){
+    const gx = originX + (xbar/r0)*radiusPix;
+    gPart = `
+      <line x1="${gx}" y1="${originY-145}" x2="${gx}" y2="${originY+145}" stroke="#dc2626" stroke-dasharray="5,5"/>
+      <line x1="${originX-25}" y1="${originY}" x2="${originX+radiusPix+35}" y2="${originY}" stroke="#dc2626" stroke-dasharray="5,5"/>
+      <circle cx="${gx}" cy="${originY}" r="5" fill="#dc2626"/>
+      <text x="${gx+8}" y="${originY-10}" fill="#dc2626" font-size="15">G</text>`;
+  }
+
+  document.getElementById("svgBox").innerHTML =
+`<svg viewBox="0 0 ${W} ${H}" width="100%" height="360" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrSector" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 z" fill="#0f172a"/>
+    </marker>
+  </defs>
+  <rect width="${W}" height="${H}" fill="#fff"/>
+
+  <!-- axes -->
+  <line x1="${originX-70}" y1="${originY}" x2="${originX+radiusPix+95}" y2="${originY}" stroke="#0f172a" stroke-width="2.4" marker-end="url(#arrSector)"/>
+  <line x1="${originX}" y1="${originY+150}" x2="${originX}" y2="${originY-150}" stroke="#0f172a" stroke-width="2.4" marker-end="url(#arrSector)"/>
+  <text x="${originX+radiusPix+105}" y="${originY-7}" fill="#0f172a" font-size="18">x</text>
+  <text x="${originX+9}" y="${originY-154}" fill="#0f172a" font-size="18">y</text>
+
+  <!-- sector -->
+  <path d="${path}" fill="#9ec5f4" opacity="0.78" stroke="#1d4ed8" stroke-width="3"/>
+  <line x1="${originX}" y1="${originY}" x2="${topX}" y2="${topY}" stroke="#334155" stroke-width="2"/>
+  <line x1="${originX}" y1="${originY}" x2="${botX}" y2="${botY}" stroke="#334155" stroke-width="2"/>
+  <path d="M ${originX+36} ${originY} A 36 36 0 0 0 ${originX+36*Math.cos(end)} ${originY-36*Math.sin(end)}" fill="none" stroke="#475569" stroke-width="2"/>
+  <path d="M ${originX+48*Math.cos(start)} ${originY-48*Math.sin(start)} A 48 48 0 0 0 ${originX+48} ${originY}" fill="none" stroke="#475569" stroke-width="2"/>
+  <text x="${originX+44}" y="${originY-32}" fill="#334155" font-size="16">α/2</text>
+  <text x="${originX+44}" y="${originY+45}" fill="#334155" font-size="16">α/2</text>
+
+  <!-- radius -->
+  <line x1="${originX}" y1="${originY}" x2="${midX}" y2="${midY}" stroke="#64748b" stroke-dasharray="5,5" stroke-width="2"/>
+  <text x="${originX+radiusPix*0.48}" y="${originY-12}" fill="#334155" font-size="16">r₀</text>
+  <text x="${midX+10}" y="${midY-12}" fill="#1d4ed8" font-size="16">x² + y² = r₀²</text>
+  ${gPart}
+</svg>`;
 }
 
 function solveProduct(){
@@ -880,22 +1774,39 @@ function drawMass(type){
 
 function solveActive(){
   if(activePanel==="basic") solveBasic();
+  else if(activePanel==="curve") solveCurveArea();
+  else if(activePanel==="engineering") buildEngineeringSection();
+  else if(activePanel==="sector") solveSector();
   else if(activePanel==="composite") solveComposite();
   else if(activePanel==="product") solveProduct();
   else if(activePanel==="mass") solveMass();
-  else if(activePanel==="photo") {
-    document.getElementById("output").textContent =
-`【拍照上傳解題】
+}
 
-這頁提供照片標註與尺寸量測。
-請將量到的尺寸輸入到：
-1) 基本慣性矩頁
-2) 組合面積頁
-3) 慣性積/莫耳圓頁
-4) 質量慣性矩頁
 
-然後按「計算目前頁面」。`;
-  }
+function loadExample1015(){
+  document.querySelectorAll(".tab").forEach(t=>{ if(t.dataset.panel==="composite") t.click(); });
+  document.getElementById("componentsText").value =
+`# 習題 10-15/16：左三角形 + 右矩形 - 圓孔
+# 原點在左下角；題目問對原本 x、y 軸，所以答案看 IxO / IyO
+# 格式：名稱,類型,形狀,xbar,ybar,b,h,d,D,A,IxG,IyG,IxyG
+Tri,add,rtriBR,200,66.6666667,300,200,0,0,0,0,0,0
+Rect,add,rect,450,100,300,200,0,0,0,0,0,0
+Hole,hole,circle,450,100,0,0,150,0,0,0,0,0`;
+  updateComponentList();
+  solveComposite();
+  document.getElementById("output").textContent =
+`【習題 10-15/16 快速範例】
+
+本題已自動拆成：
+1) 左側直角三角形：底 300 mm，高 200 mm
+2) 右側矩形：300 mm × 200 mm
+3) 圓孔：半徑 75 mm，所以直徑 d = 150 mm，使用 hole 扣除
+
+重要：
+題目 10-15 問對 x 軸的慣性矩，請看 IxO 原本 x 軸。
+題目 10-16 問對 y 軸的慣性矩，請看 IyO 原本 y 軸。
+
+` + document.getElementById("output").textContent;
 }
 
 function loadExampleComposite(){
@@ -935,6 +1846,7 @@ function showTheory(){
 10.4 組合面積的慣性矩
   先分割成簡單形狀 → 求形心 → 用平行軸定理合成。
   孔洞用負面積處理。
+  本系統新增工程截面快速建模：矩形、圓形、I 型鋼、T 型截面、中空矩形、中空圓管。
 
 10.5 面積慣性積
   Ixy = ∫xy dA
@@ -949,6 +1861,9 @@ function showTheory(){
   Imax = C + R
   Imin = C - R
 
+10-9 扇形 / 極座標慣性矩
+  Iy = r₀⁴(α + sinα)/8，Ix = r₀⁴(α − sinα)/8，α 用弧度。
+
 10.8 質量慣性矩
   I = ∫r² dm
   平行軸：I = IG + m d²
@@ -957,84 +1872,10 @@ function showTheory(){
 
 function addMessage(msg){ document.getElementById("output").textContent=msg; }
 
-// Photo tools
-document.getElementById("photoInput").addEventListener("change", e=>{
-  const file=e.target.files[0];
-  if(!file) return;
-  const img=new Image();
-  img.onload=()=>{ photoImg=img; photoMarks=[]; drawPhoto(); };
-  img.src=URL.createObjectURL(file);
-});
-
-function setPhotoMode(m){
-  photoMode=m;
-  measureTemp=null;
-  addMessage(`照片模式：${m==="point"?"標點":"量距離"}。請在圖片上點擊。`);
-}
-function clearPhotoMarks(){ photoMarks=[]; measureTemp=null; lastMeasure=""; drawPhoto(); }
-function copyMeasureToNote(){
-  const txt=document.getElementById("photoNotes");
-  txt.value += (txt.value.trim()?"\n":"") + lastMeasure;
-}
-
-const canvas=document.getElementById("photoCanvas");
-canvas.addEventListener("click", e=>{
-  if(activePanel!=="photo" || !photoImg) return;
-  const rect=canvas.getBoundingClientRect();
-  const x=(e.clientX-rect.left)*canvas.width/rect.width;
-  const y=(e.clientY-rect.top)*canvas.height/rect.height;
-  if(photoMode==="point"){
-    const label=prompt("節點/標記名稱，例如 A、B、C 或 100mm：", String.fromCharCode(65+photoMarks.filter(p=>p.type==="point").length));
-    if(label) photoMarks.push({type:"point",x,y,label});
-  }else{
-    if(!measureTemp){
-      measureTemp={x,y};
-    }else{
-      const dx=x-measureTemp.x, dy=y-measureTemp.y;
-      const dist=Math.hypot(dx,dy);
-      lastMeasure=`量測距離：${fmt(dist)} px。若此段實際長度為 L，比例 = L/${fmt(dist)}。`;
-      photoMarks.push({type:"measure",x1:measureTemp.x,y1:measureTemp.y,x2:x,y2:y,label:`${fmt(dist)} px`});
-      measureTemp=null;
-      addMessage(lastMeasure);
-    }
-  }
-  drawPhoto();
-});
-
-function drawPhoto(){
-  canvas.style.display="block";
-  const ctx=canvas.getContext("2d");
-  const W=canvas.width=900;
-  const H=canvas.height=420;
-  ctx.clearRect(0,0,W,H);
-  ctx.fillStyle="#fff"; ctx.fillRect(0,0,W,H);
-  if(!photoImg){
-    ctx.fillStyle="#475569"; ctx.font="18px sans-serif";
-    ctx.fillText("請先上傳題目照片", 340, 200);
-    return;
-  }
-  const scale=Math.min(W/photoImg.width,H/photoImg.height);
-  const iw=photoImg.width*scale, ih=photoImg.height*scale;
-  const ox=(W-iw)/2, oy=(H-ih)/2;
-  ctx.drawImage(photoImg,ox,oy,iw,ih);
-  ctx.lineWidth=3;
-  ctx.font="16px sans-serif";
-  for(const p of photoMarks){
-    if(p.type==="point"){
-      ctx.fillStyle="#dc2626"; ctx.beginPath(); ctx.arc(p.x,p.y,6,0,Math.PI*2); ctx.fill();
-      ctx.fillStyle="white"; ctx.strokeStyle="#111827"; ctx.lineWidth=4; ctx.strokeText(p.label,p.x+9,p.y-9);
-      ctx.fillStyle="#dc2626"; ctx.fillText(p.label,p.x+9,p.y-9);
-    }else{
-      ctx.strokeStyle="#16a34a"; ctx.beginPath(); ctx.moveTo(p.x1,p.y1); ctx.lineTo(p.x2,p.y2); ctx.stroke();
-      ctx.fillStyle="#16a34a"; ctx.fillText(p.label,(p.x1+p.x2)/2+6,(p.y1+p.y2)/2-6);
-    }
-  }
-  if(measureTemp){
-    ctx.fillStyle="#16a34a"; ctx.beginPath(); ctx.arc(measureTemp.x,measureTemp.y,6,0,Math.PI*2); ctx.fill();
-  }
-}
-
 // Initial
+renderEngineeringInputs();
+renderQuickComponentInputs();
+updateComponentList();
 solveBasic();
 </script>
 </body>
