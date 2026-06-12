@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>靜力學第十章｜慣性矩輔助教學網頁</title>
+<style>
+:root{
+  --bg:#f4f7fb;
+  --card:#ffffff;
+  --ink:#172033;
+  --muted:#667085;
+  --line:#d7deea;
+  --blue:#1d4ed8;
+  --blue2:#2563eb;
+  --green:#15803d;
+  --red:#dc2626;
+  --orange:#ea580c;
+  --purple:#7c3aed;
+  --dark:#0f172a;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:"Noto Sans TC","Microsoft JhengHei",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+}
+header{
+  background:linear-gradient(100deg,#0f172a,#1d4ed8);
+  color:white;
+  padding:16px 22px;
+  box-shadow:0 2px 12px rgba(15,23,42,.25);
+}
+header h1{margin:0 0 4px 0;font-size:22px;letter-spacing:.5px}
+header p{margin:0;color:#dbeafe;font-size:13px}
+.container{
+  max-width:1500px;
+  margin:18px auto;
+  padding:0 16px 28px;
+}
+.toolbar{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-bottom:12px;
+}
+button,.btn{
+  border:0;
+  border-radius:10px;
+  padding:10px 14px;
+  color:white;
+  background:var(--blue2);
+  font-weight:700;
+  cursor:pointer;
+  box-shadow:0 2px 6px rgba(37,99,235,.18);
+}
+button.secondary{background:#475569}
+button.green{background:var(--green)}
+button.orange{background:var(--orange)}
+button.red{background:var(--red)}
+button.purple{background:var(--purple)}
+button.light{
+  background:white;
+  color:var(--blue);
+  border:1px solid var(--line);
+  box-shadow:none;
+}
+button:hover{filter:brightness(.96)}
+.grid{
+  display:grid;
+  grid-template-columns:460px minmax(600px,1fr);
+  gap:14px;
+}
+@media(max-width:1050px){
+  .grid{grid-template-columns:1fr}
+}
+.card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:16px;
+  box-shadow:0 8px 24px rgba(15,23,42,.06);
+  overflow:hidden;
+}
+.card h2{
+  margin:0;
+  padding:13px 15px;
+  font-size:17px;
+  background:#f8fafc;
+  border-bottom:1px solid var(--line);
+}
+.pad{padding:14px}
+.tabs{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  padding:10px;
+  background:white;
+  border-bottom:1px solid var(--line);
+}
+.tab{
+  padding:9px 12px;
+  border-radius:999px;
+  border:1px solid var(--line);
+  cursor:pointer;
+  font-weight:800;
+  color:#334155;
+  background:white;
+}
+.tab.active{background:var(--blue);color:white;border-color:var(--blue)}
+.panel{display:none}
+.panel.active{display:block}
+label{
+  display:block;
+  margin:10px 0 5px;
+  font-weight:800;
+  font-size:13px;
+}
+input,select,textarea{
+  width:100%;
+  border:1px solid #cbd5e1;
+  border-radius:10px;
+  padding:9px 10px;
+  font-family:inherit;
+  font-size:14px;
+  background:white;
+}
+textarea{
+  min-height:94px;
+  resize:vertical;
+  font-family:"Consolas","Courier New",monospace;
+}
+.row{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+}
+.row3{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+}
+.row4{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+}
+.small{font-size:12px;color:var(--muted);line-height:1.6}
+.badge{
+  display:inline-block;
+  padding:4px 8px;
+  border-radius:999px;
+  background:#e0ecff;
+  color:#1d4ed8;
+  font-size:12px;
+  font-weight:800;
+  margin-left:6px;
+}
+.result-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+@media(max-width:900px){
+  .result-grid{grid-template-columns:1fr}
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:14px;
+}
+th,td{
+  border-bottom:1px solid #e2e8f0;
+  padding:8px 7px;
+  text-align:left;
+}
+th{background:#f8fafc}
+.out{
+  background:#0b1020;
+  color:#e6edf7;
+  border-radius:12px;
+  padding:12px;
+  font-family:"Consolas","Courier New",monospace;
+  line-height:1.55;
+  white-space:pre-wrap;
+  min-height:160px;
+  overflow:auto;
+}
+.formula{
+  background:#fff7ed;
+  color:#7c2d12;
+  border:1px solid #fed7aa;
+  border-radius:12px;
+  padding:11px 12px;
+  line-height:1.7;
+  margin:10px 0;
+}
+.svgbox{
+  width:100%;
+  min-height:360px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:white;
+  overflow:hidden;
+}
+canvas{
+  width:100%;
+  max-width:100%;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:white;
+}
+.footer{
+  margin-top:20px;
+  text-align:center;
+  color:#64748b;
+  font-size:12px;
+}
+.note{
+  padding:10px 12px;
+  background:#eef6ff;
+  border:1px solid #bfdbfe;
+  color:#1e3a8a;
+  border-radius:12px;
+  margin:10px 0;
+  line-height:1.65;
+}
+.warn{
+  padding:10px 12px;
+  background:#fff7ed;
+  border:1px solid #fdba74;
+  color:#9a3412;
+  border-radius:12px;
+  margin:10px 0;
+  line-height:1.65;
+}
+.kbd{
+  display:inline-block;
+  background:#111827;
+  color:white;
+  border-radius:5px;
+  padding:1px 6px;
+  font-size:12px;
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>靜力學第十章｜慣性矩輔助教學網頁</h1>
+  <p>支援：10.1 面積慣性矩定義、10.2 平行軸定理、10.3 迴轉半徑、10.4 組合面積、10.5 面積慣性積、10.6 傾斜軸、10.7 莫耳圓、10.8 質量慣性矩</p>
+</header>
+
+<div class="container">
+  <div class="toolbar">
+    <button onclick="loadExampleComposite()">載入組合面積範例</button>
+    <button class="green" onclick="solveActive()">計算目前頁面</button>
+    <button class="purple" onclick="drawMohrFromComposite()">組合面積 → 莫耳圓</button>
+    <button class="orange" onclick="clearAll()">清空資料</button>
+    <button class="light" onclick="showTheory()">第十章公式總整理</button>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <div class="tabs" id="tabs">
+        <div class="tab active" data-panel="basic">10.1~10.3 基本慣性矩</div>
+        <div class="tab" data-panel="composite">10.4 組合面積</div>
+        <div class="tab" data-panel="product">10.5~10.7 慣性積 / 傾斜軸 / 莫耳圓</div>
+        <div class="tab" data-panel="mass">10.8 質量慣性矩</div>
+        <div class="tab" data-panel="photo">拍照上傳解題</div>
+      </div>
+
+      <div class="pad">
+        <!-- 10.1~10.3 -->
+        <section id="basic" class="panel active">
+          <h3>10.1～10.3 單一形狀慣性矩</h3>
+          <div class="formula">
+            面積慣性矩：I<sub>x</sub>=∫y²dA，I<sub>y</sub>=∫x²dA<br>
+            平行軸定理：I = I<sub>G</sub> + A d²<br>
+            迴轉半徑：k = √(I/A)
+          </div>
+
+          <label>形狀</label>
+          <select id="shapeType" onchange="renderShapeInputs()">
+            <option value="rect">矩形 Rectangle</option>
+            <option value="circle">實心圓 Circle</option>
+            <option value="tube">中空圓 Tube</option>
+            <option value="semi">半圓 Semicircle</option>
+            <option value="custom">自訂 A、IxG、IyG</option>
+          </select>
+
+          <div id="shapeInputs"></div>
+
+          <div class="row">
+            <div>
+              <label>x 軸平行位移 dy</label>
+              <input id="basicDy" type="number" value="0" step="any">
+            </div>
+            <div>
+              <label>y 軸平行位移 dx</label>
+              <input id="basicDx" type="number" value="0" step="any">
+            </div>
+          </div>
+          <div class="small">dy 是形心到欲求 x 軸的垂直距離；dx 是形心到欲求 y 軸的水平距離。</div>
+        </section>
+
+        <!-- 10.4 -->
+        <section id="composite" class="panel">
+          <h3>10.4 組合面積的慣性矩</h3>
+          <div class="note">
+            每一列代表一個子面積。x̄、ȳ 請輸入該子面積的「形心座標」。
+            如果是挖孔，類型選「扣除孔洞」即可。
+          </div>
+
+          <label>組合面積資料</label>
+          <textarea id="componentsText"># 格式：名稱,類型,形狀,xbar,ybar,b,h,d,D,A,IxG,IyG,IxyG
+# 類型：add 或 hole
+# 形狀：rect / circle / tube / custom
+R1,add,rect,2,1,4,2,0,0,0,0,0,0
+R2,hole,circle,2,1,0,0,0.7,0,0,0,0,0</textarea>
+          <div class="small">
+            rect 使用 b,h；circle 使用 d；tube 使用 d,D；custom 使用 A,IxG,IyG,IxyG。<br>
+            單位可用 mm、cm、m，但全題要一致。
+          </div>
+
+          <div class="row">
+            <button onclick="addComponentLine('rect')">新增矩形列</button>
+            <button onclick="addComponentLine('circle')">新增圓形列</button>
+          </div>
+          <div class="row">
+            <button onclick="addComponentLine('tube')">新增中空圓列</button>
+            <button onclick="addComponentLine('custom')">新增自訂列</button>
+          </div>
+        </section>
+
+        <!-- 10.5~10.7 -->
+        <section id="product" class="panel">
+          <h3>10.5～10.7 慣性積、傾斜軸與莫耳圓</h3>
+          <div class="formula">
+            I<sub>x'</sub> = (Ix+Iy)/2 + (Ix-Iy)/2 cos2θ - Ixy sin2θ<br>
+            I<sub>y'</sub> = (Ix+Iy)/2 - (Ix-Iy)/2 cos2θ + Ixy sin2θ<br>
+            I<sub>x'y'</sub> = (Ix-Iy)/2 sin2θ + Ixy cos2θ
+          </div>
+
+          <div class="row3">
+            <div>
+              <label>Ix</label>
+              <input id="prodIx" type="number" value="1000" step="any">
+            </div>
+            <div>
+              <label>Iy</label>
+              <input id="prodIy" type="number" value="400" step="any">
+            </div>
+            <div>
+              <label>Ixy</label>
+              <input id="prodIxy" type="number" value="-200" step="any">
+            </div>
+          </div>
+          <label>軸旋轉角 θ（度）</label>
+          <input id="thetaDeg" type="number" value="30" step="any">
+          <div class="small">正角度表示座標軸逆時針旋轉。不同課本的 Ixy 正負圖示可能不同，請以本頁公式為準。</div>
+        </section>
+
+        <!-- 10.8 -->
+        <section id="mass" class="panel">
+          <h3>10.8 質量慣性矩</h3>
+          <div class="formula">
+            質量慣性矩：I = ∫r²dm<br>
+            平行軸定理：I = I<sub>G</sub> + m d²<br>
+            質量迴轉半徑：k = √(I/m)
+          </div>
+
+          <label>物體形狀</label>
+          <select id="massShape" onchange="renderMassInputs()">
+            <option value="point">質點 Point mass</option>
+            <option value="rodCenter">細長桿，通過中心且垂直桿</option>
+            <option value="rodEnd">細長桿，通過端點且垂直桿</option>
+            <option value="disk">實心圓盤/圓柱，中心軸</option>
+            <option value="hoop">薄圓環，中心軸</option>
+            <option value="rectPlate">矩形薄板，通過中心且垂直板面</option>
+            <option value="customMass">自訂 IG</option>
+          </select>
+
+          <div class="row">
+            <div>
+              <label>質量 m</label>
+              <input id="massM" type="number" value="10" step="any">
+            </div>
+            <div>
+              <label>平行軸距離 d</label>
+              <input id="massD" type="number" value="0" step="any">
+            </div>
+          </div>
+          <div id="massInputs"></div>
+        </section>
+
+        <!-- photo -->
+        <section id="photo" class="panel">
+          <h3>拍照 / 上傳題目輔助解題</h3>
+          <div class="warn">
+            這是純前端 GitHub Pages 版本，不能直接放 AI API Key，所以不會自動辨識整張題目。
+            你可以上傳照片，在圖上標記點、量比例，再把尺寸輸入上方計算器完成解題。
+          </div>
+
+          <label>上傳題目照片</label>
+          <input id="photoInput" type="file" accept="image/*">
+          <div class="row">
+            <button onclick="setPhotoMode('point')">標點</button>
+            <button onclick="setPhotoMode('measure')">量距離</button>
+          </div>
+          <div class="row">
+            <button onclick="clearPhotoMarks()">清除標記</button>
+            <button onclick="copyMeasureToNote()">把量測結果加入說明</button>
+          </div>
+
+          <label>圖片標註說明</label>
+          <textarea id="photoNotes" placeholder="例：A 到 B 實際長度 100 mm，圖上量到 320 px，所以比例為 0.3125 mm/px。"></textarea>
+
+          <div class="small">
+            操作：上傳照片後，選「標點」可點出 A、B、C...；選「量距離」後連點兩點可得到像素距離。
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>圖形顯示 / 計算結果 <span class="badge" id="activeBadge">10.1~10.3</span></h2>
+      <div class="pad">
+        <div class="result-grid">
+          <div>
+            <h3>圖形</h3>
+            <div id="svgBox" class="svgbox"></div>
+            <canvas id="photoCanvas" height="420" style="display:none;margin-top:10px"></canvas>
+          </div>
+          <div>
+            <h3>計算表</h3>
+            <div id="tableBox"></div>
+          </div>
+        </div>
+
+        <h3>計算過程 / 教學說明</h3>
+        <div class="out" id="output">請選擇左側功能並按「計算目前頁面」。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Static web app｜可部署到 GitHub Pages / Netlify / Vercel｜第十章慣性矩教學版
+  </div>
+</div>
+
+<script>
+let activePanel = "basic";
+let lastComposite = null;
+let photoImg = null;
+let photoMarks = [];
+let photoMode = "point";
+let measureTemp = null;
+let lastMeasure = "";
+
+document.querySelectorAll(".tab").forEach(tab=>{
+  tab.addEventListener("click",()=>{
+    document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+    document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+    tab.classList.add("active");
+    activePanel = tab.dataset.panel;
+    document.getElementById(activePanel).classList.add("active");
+    document.getElementById("activeBadge").textContent = tab.textContent.trim();
+    document.getElementById("photoCanvas").style.display = activePanel==="photo" ? "block" : "none";
+    if(activePanel==="photo") drawPhoto();
+  });
+});
+
+function num(id){ return parseFloat(document.getElementById(id).value) || 0; }
+function fmt(v){ 
+  if(!isFinite(v)) return "NaN";
+  const av=Math.abs(v);
+  if(av!==0 && (av>=1e6 || av<1e-3)) return v.toExponential(4);
+  return v.toFixed(4).replace(/\.?0+$/,"");
+}
+function htmlTable(headers, rows){
+  let s="<table><thead><tr>"+headers.map(h=>`<th>${h}</th>`).join("")+"</tr></thead><tbody>";
+  s += rows.map(r=>"<tr>"+r.map(c=>`<td>${c}</td>`).join("")+"</tr>").join("");
+  return s+"</tbody></table>";
+}
+
+function renderShapeInputs(){
+  const t=document.getElementById("shapeType").value;
+  const box=document.getElementById("shapeInputs");
+  if(t==="rect"){
+    box.innerHTML=`<div class="row"><div><label>寬 b</label><input id="basicB" type="number" value="100" step="any"></div><div><label>高 h</label><input id="basicH" type="number" value="50" step="any"></div></div>`;
+  }else if(t==="circle"){
+    box.innerHTML=`<label>直徑 d</label><input id="basicD" type="number" value="50" step="any">`;
+  }else if(t==="tube"){
+    box.innerHTML=`<div class="row"><div><label>內徑 d</label><input id="basicd" type="number" value="30" step="any"></div><div><label>外徑 D</label><input id="basicD" type="number" value="60" step="any"></div></div>`;
+  }else if(t==="semi"){
+    box.innerHTML=`<label>半徑 r</label><input id="basicR" type="number" value="50" step="any"><div class="small">半圓形心距直徑邊：4r/(3π)。本頁 IxG 取通過半圓形心且平行直徑的軸。</div>`;
+  }else{
+    box.innerHTML=`<div class="row3"><div><label>A</label><input id="basicA" type="number" value="1000" step="any"></div><div><label>IxG</label><input id="basicIxG" type="number" value="20000" step="any"></div><div><label>IyG</label><input id="basicIyG" type="number" value="8000" step="any"></div></div>`;
+  }
+}
+renderShapeInputs();
+
+function renderMassInputs(){
+  const t=document.getElementById("massShape").value;
+  const box=document.getElementById("massInputs");
+  if(t==="point"){
+    box.innerHTML=`<label>距離旋轉軸 r</label><input id="massR" type="number" value="2" step="any">`;
+  }else if(t==="rodCenter" || t==="rodEnd"){
+    box.innerHTML=`<label>桿長 L</label><input id="massL" type="number" value="2" step="any">`;
+  }else if(t==="disk" || t==="hoop"){
+    box.innerHTML=`<label>半徑 R</label><input id="massR" type="number" value="0.5" step="any">`;
+  }else if(t==="rectPlate"){
+    box.innerHTML=`<div class="row"><div><label>邊長 a</label><input id="massA" type="number" value="2" step="any"></div><div><label>邊長 b</label><input id="massB" type="number" value="1" step="any"></div></div>`;
+  }else{
+    box.innerHTML=`<label>自訂 IG</label><input id="massIG" type="number" value="5" step="any">`;
+  }
+}
+renderMassInputs();
+
+function shapePropsBasic(){
+  const t=document.getElementById("shapeType").value;
+  let A=0,IxG=0,IyG=0,desc="";
+  if(t==="rect"){
+    const b=num("basicB"), h=num("basicH");
+    A=b*h; IxG=b*Math.pow(h,3)/12; IyG=h*Math.pow(b,3)/12;
+    desc=`矩形 b=${b}, h=${h}`;
+  }else if(t==="circle"){
+    const d=num("basicD");
+    A=Math.PI*d*d/4; IxG=Math.PI*Math.pow(d,4)/64; IyG=IxG;
+    desc=`實心圓 d=${d}`;
+  }else if(t==="tube"){
+    const d=num("basicd"), D=num("basicD");
+    A=Math.PI*(D*D-d*d)/4; IxG=Math.PI*(Math.pow(D,4)-Math.pow(d,4))/64; IyG=IxG;
+    desc=`中空圓 D=${D}, d=${d}`;
+  }else if(t==="semi"){
+    const r=num("basicR");
+    A=Math.PI*r*r/2;
+    const ybar=4*r/(3*Math.PI);
+    const Idiam=Math.PI*Math.pow(r,4)/8;
+    IxG=Idiam-A*ybar*ybar;
+    IyG=Math.PI*Math.pow(r,4)/8;
+    desc=`半圓 r=${r}，形心距直徑邊 ybar=4r/(3π)=${fmt(ybar)}`;
+  }else{
+    A=num("basicA"); IxG=num("basicIxG"); IyG=num("basicIyG");
+    desc=`自訂截面`;
+  }
+  return {A,IxG,IyG,desc};
+}
+
+function solveBasic(){
+  const p=shapePropsBasic();
+  const dx=num("basicDx"), dy=num("basicDy");
+  const Ix=p.IxG + p.A*dy*dy;
+  const Iy=p.IyG + p.A*dx*dx;
+  const kx=Math.sqrt(Math.abs(Ix/p.A));
+  const ky=Math.sqrt(Math.abs(Iy/p.A));
+  document.getElementById("tableBox").innerHTML = htmlTable(
+    ["項目","數值"],
+    [["A",fmt(p.A)],["IxG",fmt(p.IxG)],["IyG",fmt(p.IyG)],["Ix = IxG + A dy²",fmt(Ix)],["Iy = IyG + A dx²",fmt(Iy)],["kx = √(Ix/A)",fmt(kx)],["ky = √(Iy/A)",fmt(ky)]]
+  );
+  document.getElementById("output").textContent =
+`【10.1～10.3 基本慣性矩】
+
+形狀：${p.desc}
+
+1) 先求形心軸慣性矩：
+   IxG = ${fmt(p.IxG)}
+   IyG = ${fmt(p.IyG)}
+
+2) 使用平行軸定理：
+   Ix = IxG + A(dy)^2
+      = ${fmt(p.IxG)} + ${fmt(p.A)}(${fmt(dy)})^2
+      = ${fmt(Ix)}
+
+   Iy = IyG + A(dx)^2
+      = ${fmt(p.IyG)} + ${fmt(p.A)}(${fmt(dx)})^2
+      = ${fmt(Iy)}
+
+3) 迴轉半徑：
+   kx = √(Ix/A) = ${fmt(kx)}
+   ky = √(Iy/A) = ${fmt(ky)}`;
+  drawBasicShape();
+}
+
+function drawBasicShape(){
+  const t=document.getElementById("shapeType").value;
+  let svg=`<svg viewBox="0 0 640 360" width="100%" height="360" xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="arr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#1d4ed8"/></marker></defs>
+  <rect x="0" y="0" width="640" height="360" fill="#fff"/>
+  <line x1="60" y1="300" x2="600" y2="300" stroke="#94a3b8"/>
+  <line x1="80" y1="330" x2="80" y2="40" stroke="#94a3b8"/>
+  <text x="592" y="292" fill="#475569">x</text>
+  <text x="90" y="50" fill="#475569">y</text>`;
+  if(t==="rect"){
+    svg+=`<rect x="220" y="110" width="200" height="120" fill="#dbeafe" stroke="#1d4ed8" stroke-width="3"/>
+    <line x1="320" y1="80" x2="320" y2="260" stroke="#dc2626" stroke-dasharray="5,5"/>
+    <line x1="190" y1="170" x2="450" y2="170" stroke="#dc2626" stroke-dasharray="5,5"/>
+    <text x="305" y="165" fill="#dc2626">G</text>
+    <text x="295" y="252">b</text><text x="430" y="175">h</text>`;
+  }else if(t==="circle"||t==="tube"){
+    svg+=`<circle cx="320" cy="170" r="80" fill="#dbeafe" stroke="#1d4ed8" stroke-width="3"/>`;
+    if(t==="tube") svg+=`<circle cx="320" cy="170" r="40" fill="#fff" stroke="#1d4ed8" stroke-width="3"/>`;
+    svg+=`<line x1="320" y1="70" x2="320" y2="270" stroke="#dc2626" stroke-dasharray="5,5"/>
+    <line x1="220" y1="170" x2="420" y2="170" stroke="#dc2626" stroke-dasharray="5,5"/>
+    <text x="328" y="165" fill="#dc2626">G</text>`;
+  }else if(t==="semi"){
+    svg+=`<path d="M220 230 A100 100 0 0 1 420 230 Z" fill="#dbeafe" stroke="#1d4ed8" stroke-width="3"/>
+    <line x1="180" y1="230" x2="460" y2="230" stroke="#dc2626" stroke-dasharray="5,5"/>
+    <line x1="320" y1="90" x2="320" y2="270" stroke="#dc2626" stroke-dasharray="5,5"/>
+    <text x="328" y="185" fill="#dc2626">G</text>`;
+  }else{
+    svg+=`<rect x="220" y="110" width="200" height="120" rx="18" fill="#f3e8ff" stroke="#7c3aed" stroke-width="3"/>
+    <text x="270" y="175" fill="#7c3aed">Custom A, IxG, IyG</text>`;
+  }
+  svg+=`</svg>`;
+  document.getElementById("svgBox").innerHTML=svg;
+}
+
+function parseComponents(){
+  const lines=document.getElementById("componentsText").value.split(/\n/);
+  const comps=[];
+  for(const raw of lines){
+    const line=raw.trim();
+    if(!line || line.startsWith("#")) continue;
+    const p=line.split(",").map(x=>x.trim());
+    while(p.length<13) p.push("0");
+    const [name,kind,shape]=p;
+    const xbar=parseFloat(p[3])||0, ybar=parseFloat(p[4])||0;
+    const b=parseFloat(p[5])||0, h=parseFloat(p[6])||0, d=parseFloat(p[7])||0, D=parseFloat(p[8])||0;
+    let A=parseFloat(p[9])||0, IxG=parseFloat(p[10])||0, IyG=parseFloat(p[11])||0, IxyG=parseFloat(p[12])||0;
+    if(shape==="rect"){
+      A=b*h; IxG=b*Math.pow(h,3)/12; IyG=h*Math.pow(b,3)/12; IxyG=0;
+    }else if(shape==="circle"){
+      A=Math.PI*d*d/4; IxG=Math.PI*Math.pow(d,4)/64; IyG=IxG; IxyG=0;
+    }else if(shape==="tube"){
+      A=Math.PI*(D*D-d*d)/4; IxG=Math.PI*(Math.pow(D,4)-Math.pow(d,4))/64; IyG=IxG; IxyG=0;
+    }
+    const sign = kind.toLowerCase()==="hole" ? -1 : 1;
+    comps.push({name,kind,shape,xbar,ybar,b,h,d,D,A:sign*A,IxG:sign*IxG,IyG:sign*IyG,IxyG:sign*IxyG});
+  }
+  return comps;
+}
+
+function solveComposite(){
+  const comps=parseComponents();
+  let At=0,Sx=0,Sy=0,IxO=0,IyO=0,IxyO=0;
+  const rows=[];
+  for(const c of comps){
+    At += c.A;
+    Sx += c.A*c.xbar;
+    Sy += c.A*c.ybar;
+    const ixO = c.IxG + c.A*c.ybar*c.ybar;
+    const iyO = c.IyG + c.A*c.xbar*c.xbar;
+    const ixyO = c.IxyG + c.A*c.xbar*c.ybar;
+    IxO += ixO; IyO += iyO; IxyO += ixyO;
+    rows.push([c.name,c.kind,c.shape,fmt(c.A),fmt(c.xbar),fmt(c.ybar),fmt(ixO),fmt(iyO),fmt(ixyO)]);
+  }
+  const xbar=Sx/At, ybar=Sy/At;
+  const IxG=IxO-At*ybar*ybar;
+  const IyG=IyO-At*xbar*xbar;
+  const IxyG=IxyO-At*xbar*ybar;
+  const kx=Math.sqrt(Math.abs(IxG/At));
+  const ky=Math.sqrt(Math.abs(IyG/At));
+  lastComposite={At,xbar,ybar,IxO,IyO,IxyO,IxG,IyG,IxyG,kx,ky,comps};
+  document.getElementById("tableBox").innerHTML =
+    htmlTable(["名稱","類型","形狀","A","x̄i","ȳi","IxO","IyO","IxyO"],rows) +
+    "<br>" + htmlTable(["總結果","數值"],[
+      ["A total",fmt(At)],["x̄",fmt(xbar)],["ȳ",fmt(ybar)],
+      ["Ix about centroid",fmt(IxG)],["Iy about centroid",fmt(IyG)],["Ixy about centroid",fmt(IxyG)],
+      ["kx",fmt(kx)],["ky",fmt(ky)]
+    ]);
+  document.getElementById("output").textContent =
+`【10.4 組合面積】
+
+1) 分割成簡單面積，孔洞用負面積。
+2) 求總面積：
+   A = ΣAi = ${fmt(At)}
+
+3) 求組合形心：
+   x̄ = Σ(Ai xi)/ΣAi = ${fmt(xbar)}
+   ȳ = Σ(Ai yi)/ΣAi = ${fmt(ybar)}
+
+4) 對原點 O 使用平行軸定理：
+   IxO = Σ(IxGi + Ai yi²) = ${fmt(IxO)}
+   IyO = Σ(IyGi + Ai xi²) = ${fmt(IyO)}
+   IxyO = Σ(IxyGi + Ai xi yi) = ${fmt(IxyO)}
+
+5) 轉到組合形心軸：
+   IxG = IxO - Aȳ² = ${fmt(IxG)}
+   IyG = IyO - Ax̄² = ${fmt(IyG)}
+   IxyG = IxyO - Ax̄ȳ = ${fmt(IxyG)}
+
+6) 迴轉半徑：
+   kx = √(IxG/A) = ${fmt(kx)}
+   ky = √(IyG/A) = ${fmt(ky)}`;
+  drawComposite(comps,xbar,ybar);
+}
+
+function drawComposite(comps,xg,yg){
+  if(!comps.length){ document.getElementById("svgBox").innerHTML=""; return; }
+  let xs=[],ys=[];
+  comps.forEach(c=>{
+    if(c.shape==="rect"){ xs.push(c.xbar-c.b/2,c.xbar+c.b/2); ys.push(c.ybar-c.h/2,c.ybar+c.h/2); }
+    else { let r=(c.shape==="tube"?c.D:c.d)/2 || 1; xs.push(c.xbar-r,c.xbar+r); ys.push(c.ybar-r,c.ybar+r); }
+  });
+  const minx=Math.min(...xs), maxx=Math.max(...xs), miny=Math.min(...ys), maxy=Math.max(...ys);
+  const W=640,H=360,pad=50;
+  const sx=(W-2*pad)/(maxx-minx||1), sy=(H-2*pad)/(maxy-miny||1), s=Math.min(sx,sy);
+  const X=x=>pad+(x-minx)*s;
+  const Y=y=>H-pad-(y-miny)*s;
+  let svg=`<svg viewBox="0 0 ${W} ${H}" width="100%" height="360" xmlns="http://www.w3.org/2000/svg"><rect width="${W}" height="${H}" fill="#fff"/>`;
+  comps.forEach(c=>{
+    const fill=c.kind.toLowerCase()==="hole"?"#fee2e2":"#dbeafe";
+    const stroke=c.kind.toLowerCase()==="hole"?"#dc2626":"#1d4ed8";
+    if(c.shape==="rect"){
+      svg+=`<rect x="${X(c.xbar-c.b/2)}" y="${Y(c.ybar+c.h/2)}" width="${c.b*s}" height="${c.h*s}" fill="${fill}" stroke="${stroke}" stroke-width="3"/>`;
+    }else{
+      let r=((c.shape==="tube"?c.D:c.d)/2 || 1)*s;
+      svg+=`<circle cx="${X(c.xbar)}" cy="${Y(c.ybar)}" r="${r}" fill="${fill}" stroke="${stroke}" stroke-width="3"/>`;
+      if(c.shape==="tube"){
+        svg+=`<circle cx="${X(c.xbar)}" cy="${Y(c.ybar)}" r="${(c.d/2)*s}" fill="#fff" stroke="${stroke}" stroke-width="3"/>`;
+      }
+    }
+    svg+=`<text x="${X(c.xbar)+5}" y="${Y(c.ybar)-5}" fill="#334155">${c.name}</text>`;
+  });
+  svg+=`<line x1="${X(xg)}" y1="20" x2="${X(xg)}" y2="${H-20}" stroke="#dc2626" stroke-dasharray="5,5"/>
+        <line x1="20" y1="${Y(yg)}" x2="${W-20}" y2="${Y(yg)}" stroke="#dc2626" stroke-dasharray="5,5"/>
+        <circle cx="${X(xg)}" cy="${Y(yg)}" r="5" fill="#dc2626"/>
+        <text x="${X(xg)+8}" y="${Y(yg)-8}" fill="#dc2626">G</text></svg>`;
+  document.getElementById("svgBox").innerHTML=svg;
+}
+
+function addComponentLine(shape){
+  const txt=document.getElementById("componentsText");
+  let line="";
+  const n=txt.value.split(/\n/).filter(x=>x.trim()&&!x.trim().startsWith("#")).length+1;
+  if(shape==="rect") line=`R${n},add,rect,0,0,100,50,0,0,0,0,0,0`;
+  else if(shape==="circle") line=`C${n},add,circle,0,0,0,0,50,0,0,0,0,0`;
+  else if(shape==="tube") line=`T${n},add,tube,0,0,0,0,30,60,0,0,0,0`;
+  else line=`U${n},add,custom,0,0,0,0,0,0,1000,20000,8000,0`;
+  txt.value += "\n" + line;
+}
+
+function solveProduct(){
+  const Ix=num("prodIx"), Iy=num("prodIy"), Ixy=num("prodIxy");
+  const th=num("thetaDeg")*Math.PI/180;
+  const avg=(Ix+Iy)/2, diff=(Ix-Iy)/2;
+  const Ixp=avg + diff*Math.cos(2*th) - Ixy*Math.sin(2*th);
+  const Iyp=avg - diff*Math.cos(2*th) + Ixy*Math.sin(2*th);
+  const Ixyp=diff*Math.sin(2*th) + Ixy*Math.cos(2*th);
+  const R=Math.sqrt(diff*diff + Ixy*Ixy);
+  const Imax=avg+R, Imin=avg-R;
+  const thetaP=0.5*Math.atan2(-2*Ixy, Ix-Iy)*180/Math.PI;
+  document.getElementById("tableBox").innerHTML=htmlTable(["項目","數值"],[
+    ["Ix'",fmt(Ixp)],["Iy'",fmt(Iyp)],["Ix'y'",fmt(Ixyp)],
+    ["Iavg",fmt(avg)],["R",fmt(R)],["Imax",fmt(Imax)],["Imin",fmt(Imin)],["θp",fmt(thetaP)+"°"]
+  ]);
+  document.getElementById("output").textContent=
+`【10.5～10.7 慣性積、傾斜軸與莫耳圓】
+
+輸入：
+Ix=${fmt(Ix)}, Iy=${fmt(Iy)}, Ixy=${fmt(Ixy)}, θ=${fmt(num("thetaDeg"))}°
+
+1) 傾斜軸轉換：
+Ix' = (Ix+Iy)/2 + (Ix-Iy)/2 cos2θ - Ixy sin2θ = ${fmt(Ixp)}
+Iy' = (Ix+Iy)/2 - (Ix-Iy)/2 cos2θ + Ixy sin2θ = ${fmt(Iyp)}
+Ix'y' = (Ix-Iy)/2 sin2θ + Ixy cos2θ = ${fmt(Ixyp)}
+
+2) 莫耳圓：
+中心 C = (Ix+Iy)/2 = ${fmt(avg)}
+半徑 R = √[((Ix-Iy)/2)² + Ixy²] = ${fmt(R)}
+
+3) 主慣性矩：
+Imax = C + R = ${fmt(Imax)}
+Imin = C - R = ${fmt(Imin)}
+主軸角 θp = 1/2 atan2(-2Ixy, Ix-Iy) = ${fmt(thetaP)}°`;
+  drawMohr(Ix,Iy,Ixy,Ixp,Iyp,Ixyp,Imax,Imin,avg,R);
+}
+
+function drawMohrFromComposite(){
+  if(!lastComposite) solveComposite();
+  if(!lastComposite) return;
+  document.querySelectorAll(".tab").forEach(t=>{ if(t.dataset.panel==="product") t.click(); });
+  document.getElementById("prodIx").value=lastComposite.IxG;
+  document.getElementById("prodIy").value=lastComposite.IyG;
+  document.getElementById("prodIxy").value=lastComposite.IxyG;
+  solveProduct();
+}
+
+function drawMohr(Ix,Iy,Ixy,Ixp,Iyp,Ixyp,Imax,Imin,avg,R){
+  const W=640,H=360,cx=320,cy=180;
+  const margin=50;
+  const allx=[Ix,Iy,Ixp,Iyp,Imax,Imin,avg];
+  const ally=[Ixy,-Ixy,Ixyp,-Ixyp,0];
+  const range=Math.max(...allx.map(v=>Math.abs(v-avg)), ...ally.map(v=>Math.abs(v)), R, 1);
+  const s=(Math.min(W,H)-2*margin)/(2*range);
+  const X=v=>cx+(v-avg)*s;
+  const Y=v=>cy-v*s;
+  let svg=`<svg viewBox="0 0 ${W} ${H}" width="100%" height="360" xmlns="http://www.w3.org/2000/svg">
+  <rect width="${W}" height="${H}" fill="#fff"/>
+  <line x1="30" y1="${cy}" x2="${W-30}" y2="${cy}" stroke="#94a3b8"/>
+  <line x1="${cx}" y1="30" x2="${cx}" y2="${H-30}" stroke="#94a3b8"/>
+  <circle cx="${cx}" cy="${cy}" r="${R*s}" fill="none" stroke="#1d4ed8" stroke-width="3"/>
+  <circle cx="${X(Ix)}" cy="${Y(Ixy)}" r="5" fill="#dc2626"/><text x="${X(Ix)+8}" y="${Y(Ixy)-6}">A(Ix,Ixy)</text>
+  <circle cx="${X(Iy)}" cy="${Y(-Ixy)}" r="5" fill="#dc2626"/><text x="${X(Iy)+8}" y="${Y(-Ixy)+16}">B(Iy,-Ixy)</text>
+  <circle cx="${X(Ixp)}" cy="${Y(Ixyp)}" r="5" fill="#16a34a"/><text x="${X(Ixp)+8}" y="${Y(Ixyp)-6}">x'</text>
+  <circle cx="${X(Iyp)}" cy="${Y(-Ixyp)}" r="5" fill="#16a34a"/><text x="${X(Iyp)+8}" y="${Y(-Ixyp)+16}">y'</text>
+  <circle cx="${X(Imax)}" cy="${Y(0)}" r="5" fill="#7c3aed"/><text x="${X(Imax)+8}" y="${Y(0)-6}">Imax</text>
+  <circle cx="${X(Imin)}" cy="${Y(0)}" r="5" fill="#7c3aed"/><text x="${X(Imin)-45}" y="${Y(0)-6}">Imin</text>
+  <text x="${W-70}" y="${cy-8}" fill="#475569">I</text>
+  <text x="${cx+8}" y="38" fill="#475569">Ixy</text>
+  </svg>`;
+  document.getElementById("svgBox").innerHTML=svg;
+}
+
+function solveMass(){
+  const type=document.getElementById("massShape").value;
+  const m=num("massM"), d=num("massD");
+  let IG=0,desc="";
+  if(type==="point"){
+    const r=num("massR"); IG=m*r*r; desc=`質點：I = mr²，r=${r}`;
+  }else if(type==="rodCenter"){
+    const L=num("massL"); IG=m*L*L/12; desc=`細長桿中心軸：IG = (1/12)mL²，L=${L}`;
+  }else if(type==="rodEnd"){
+    const L=num("massL"); IG=m*L*L/3; desc=`細長桿端點軸：I = (1/3)mL²，L=${L}`;
+  }else if(type==="disk"){
+    const R=num("massR"); IG=0.5*m*R*R; desc=`實心圓盤中心軸：IG = (1/2)mR²，R=${R}`;
+  }else if(type==="hoop"){
+    const R=num("massR"); IG=m*R*R; desc=`薄圓環中心軸：IG = mR²，R=${R}`;
+  }else if(type==="rectPlate"){
+    const a=num("massA"), b=num("massB"); IG=m*(a*a+b*b)/12; desc=`矩形薄板中心垂直軸：IG=(1/12)m(a²+b²)，a=${a}, b=${b}`;
+  }else{
+    IG=num("massIG"); desc=`自訂 IG`;
+  }
+  const I=IG+m*d*d;
+  const k=Math.sqrt(Math.abs(I/m));
+  document.getElementById("tableBox").innerHTML=htmlTable(["項目","數值"],[
+    ["m",fmt(m)],["IG",fmt(IG)],["d",fmt(d)],["I = IG + md²",fmt(I)],["k = √(I/m)",fmt(k)]
+  ]);
+  document.getElementById("output").textContent=
+`【10.8 質量慣性矩】
+
+物體：${desc}
+
+1) 先求通過質心 G 的質量慣性矩：
+   IG = ${fmt(IG)}
+
+2) 若欲求平行軸，使用平行軸定理：
+   I = IG + m d²
+     = ${fmt(IG)} + ${fmt(m)}(${fmt(d)})²
+     = ${fmt(I)}
+
+3) 質量迴轉半徑：
+   k = √(I/m) = ${fmt(k)}`;
+  drawMass(type);
+}
+
+function drawMass(type){
+  let svg=`<svg viewBox="0 0 640 360" width="100%" height="360" xmlns="http://www.w3.org/2000/svg"><rect width="640" height="360" fill="#fff"/>`;
+  if(type.includes("rod")){
+    svg+=`<line x1="160" y1="180" x2="480" y2="180" stroke="#1d4ed8" stroke-width="18" stroke-linecap="round"/>
+    <line x1="320" y1="80" x2="320" y2="280" stroke="#dc2626" stroke-dasharray="6,6"/>
+    <text x="330" y="105" fill="#dc2626">axis</text>`;
+  }else if(type==="disk"||type==="hoop"){
+    svg+=`<circle cx="320" cy="180" r="95" fill="${type==="hoop"?"#fff":"#dbeafe"}" stroke="#1d4ed8" stroke-width="14"/>
+    <line x1="320" y1="70" x2="320" y2="290" stroke="#dc2626" stroke-dasharray="6,6"/>
+    <text x="330" y="105" fill="#dc2626">axis</text>`;
+  }else if(type==="rectPlate"){
+    svg+=`<rect x="190" y="110" width="260" height="140" fill="#dbeafe" stroke="#1d4ed8" stroke-width="4"/>
+    <line x1="320" y1="70" x2="320" y2="290" stroke="#dc2626" stroke-dasharray="6,6"/>
+    <text x="330" y="105" fill="#dc2626">axis</text>`;
+  }else{
+    svg+=`<circle cx="320" cy="180" r="12" fill="#1d4ed8"/>
+    <line x1="160" y1="180" x2="320" y2="180" stroke="#94a3b8" stroke-width="3"/>
+    <text x="230" y="165">r</text><text x="335" y="185">m</text>`;
+  }
+  svg+=`</svg>`;
+  document.getElementById("svgBox").innerHTML=svg;
+}
+
+function solveActive(){
+  if(activePanel==="basic") solveBasic();
+  else if(activePanel==="composite") solveComposite();
+  else if(activePanel==="product") solveProduct();
+  else if(activePanel==="mass") solveMass();
+  else if(activePanel==="photo") {
+    document.getElementById("output").textContent =
+`【拍照上傳解題】
+
+這頁提供照片標註與尺寸量測。
+請將量到的尺寸輸入到：
+1) 基本慣性矩頁
+2) 組合面積頁
+3) 慣性積/莫耳圓頁
+4) 質量慣性矩頁
+
+然後按「計算目前頁面」。`;
+  }
+}
+
+function loadExampleComposite(){
+  document.querySelectorAll(".tab").forEach(t=>{ if(t.dataset.panel==="composite") t.click(); });
+  document.getElementById("componentsText").value =
+`# 範例：外矩形 200x120，中心挖直徑 60 的圓孔
+# 格式：名稱,類型,形狀,xbar,ybar,b,h,d,D,A,IxG,IyG,IxyG
+R1,add,rect,100,60,200,120,0,0,0,0,0,0
+C1,hole,circle,100,60,0,0,60,0,0,0,0,0`;
+  solveComposite();
+}
+
+function clearAll(){
+  document.getElementById("output").textContent="已清空部分計算結果。";
+  document.getElementById("tableBox").innerHTML="";
+  document.getElementById("svgBox").innerHTML="";
+  lastComposite=null;
+}
+
+function showTheory(){
+  document.getElementById("output").textContent =
+`【第十章慣性矩公式總整理】
+
+10.1 面積慣性矩的定義
+  Ix = ∫y² dA
+  Iy = ∫x² dA
+  單位通常為 mm⁴、cm⁴、m⁴。
+
+10.2 面積的平行軸定理
+  Ix = IxG + A dy²
+  Iy = IyG + A dx²
+
+10.3 面積的迴轉半徑
+  kx = √(Ix/A)
+  ky = √(Iy/A)
+
+10.4 組合面積的慣性矩
+  先分割成簡單形狀 → 求形心 → 用平行軸定理合成。
+  孔洞用負面積處理。
+
+10.5 面積慣性積
+  Ixy = ∫xy dA
+  若面積對 x 軸或 y 軸對稱，且軸為對稱軸，則 Ixy = 0。
+
+10.6 面積對傾斜軸的慣性矩
+  用 Ix、Iy、Ixy 與角度 θ 轉換到 x'、y'。
+
+10.7 慣性矩之莫耳圓
+  C = (Ix+Iy)/2
+  R = √[((Ix-Iy)/2)² + Ixy²]
+  Imax = C + R
+  Imin = C - R
+
+10.8 質量慣性矩
+  I = ∫r² dm
+  平行軸：I = IG + m d²
+  質量迴轉半徑：k = √(I/m)`;
+}
+
+function addMessage(msg){ document.getElementById("output").textContent=msg; }
+
+// Photo tools
+document.getElementById("photoInput").addEventListener("change", e=>{
+  const file=e.target.files[0];
+  if(!file) return;
+  const img=new Image();
+  img.onload=()=>{ photoImg=img; photoMarks=[]; drawPhoto(); };
+  img.src=URL.createObjectURL(file);
+});
+
+function setPhotoMode(m){
+  photoMode=m;
+  measureTemp=null;
+  addMessage(`照片模式：${m==="point"?"標點":"量距離"}。請在圖片上點擊。`);
+}
+function clearPhotoMarks(){ photoMarks=[]; measureTemp=null; lastMeasure=""; drawPhoto(); }
+function copyMeasureToNote(){
+  const txt=document.getElementById("photoNotes");
+  txt.value += (txt.value.trim()?"\n":"") + lastMeasure;
+}
+
+const canvas=document.getElementById("photoCanvas");
+canvas.addEventListener("click", e=>{
+  if(activePanel!=="photo" || !photoImg) return;
+  const rect=canvas.getBoundingClientRect();
+  const x=(e.clientX-rect.left)*canvas.width/rect.width;
+  const y=(e.clientY-rect.top)*canvas.height/rect.height;
+  if(photoMode==="point"){
+    const label=prompt("節點/標記名稱，例如 A、B、C 或 100mm：", String.fromCharCode(65+photoMarks.filter(p=>p.type==="point").length));
+    if(label) photoMarks.push({type:"point",x,y,label});
+  }else{
+    if(!measureTemp){
+      measureTemp={x,y};
+    }else{
+      const dx=x-measureTemp.x, dy=y-measureTemp.y;
+      const dist=Math.hypot(dx,dy);
+      lastMeasure=`量測距離：${fmt(dist)} px。若此段實際長度為 L，比例 = L/${fmt(dist)}。`;
+      photoMarks.push({type:"measure",x1:measureTemp.x,y1:measureTemp.y,x2:x,y2:y,label:`${fmt(dist)} px`});
+      measureTemp=null;
+      addMessage(lastMeasure);
+    }
+  }
+  drawPhoto();
+});
+
+function drawPhoto(){
+  canvas.style.display="block";
+  const ctx=canvas.getContext("2d");
+  const W=canvas.width=900;
+  const H=canvas.height=420;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle="#fff"; ctx.fillRect(0,0,W,H);
+  if(!photoImg){
+    ctx.fillStyle="#475569"; ctx.font="18px sans-serif";
+    ctx.fillText("請先上傳題目照片", 340, 200);
+    return;
+  }
+  const scale=Math.min(W/photoImg.width,H/photoImg.height);
+  const iw=photoImg.width*scale, ih=photoImg.height*scale;
+  const ox=(W-iw)/2, oy=(H-ih)/2;
+  ctx.drawImage(photoImg,ox,oy,iw,ih);
+  ctx.lineWidth=3;
+  ctx.font="16px sans-serif";
+  for(const p of photoMarks){
+    if(p.type==="point"){
+      ctx.fillStyle="#dc2626"; ctx.beginPath(); ctx.arc(p.x,p.y,6,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle="white"; ctx.strokeStyle="#111827"; ctx.lineWidth=4; ctx.strokeText(p.label,p.x+9,p.y-9);
+      ctx.fillStyle="#dc2626"; ctx.fillText(p.label,p.x+9,p.y-9);
+    }else{
+      ctx.strokeStyle="#16a34a"; ctx.beginPath(); ctx.moveTo(p.x1,p.y1); ctx.lineTo(p.x2,p.y2); ctx.stroke();
+      ctx.fillStyle="#16a34a"; ctx.fillText(p.label,(p.x1+p.x2)/2+6,(p.y1+p.y2)/2-6);
+    }
+  }
+  if(measureTemp){
+    ctx.fillStyle="#16a34a"; ctx.beginPath(); ctx.arc(measureTemp.x,measureTemp.y,6,0,Math.PI*2); ctx.fill();
+  }
+}
+
+// Initial
+solveBasic();
+</script>
+</body>
+</html>
